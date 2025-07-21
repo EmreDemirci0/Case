@@ -1,0 +1,59 @@
+# Node.js
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+
+# Auth info (Baileys gibi kütüphaneler için)
+auth_info/
+baileys_auth_info/
+
+# Environment files
+.env
+.env.*
+
+# Compiled output (Baileys gibi)
+*.d.ts
+*.js.map
+*.js
+
+# IDE/editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# React frontend build
+/frontend/build/
+
+# Optional: OS generated
+*.swp
+*.swo
+
+# Coverage (e.g., Jest)
+coverage/
+
+# Optional: SQLite, PostgreSQL dumps etc.
+*.sqlite
+*.db
+*.dump
+
+# Git
+.git/
+
+# Optional: PM2 logs (eğer kullanıyorsan)
+pids
+*.pid
+*.seed
+
+# Optional: Uploaded media (örnek olarak)
+uploads/
+public/uploads/
