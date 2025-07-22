@@ -7,7 +7,12 @@ interface BaseResponse<T = any> {
   message: string;
 }
 
-export async function fetchEnergy(token: string): Promise<BaseResponse<{ energy: number }>> {
+interface EnergyData {
+  energy: number;
+  lastEnergyUpdateAt: string;
+}
+
+export async function fetchEnergy(token: string): Promise<BaseResponse<EnergyData>> {
   try {
     const res = await fetch(`${API_URL}/energy`, {
       method: "GET",
@@ -17,10 +22,8 @@ export async function fetchEnergy(token: string): Promise<BaseResponse<{ energy:
       },
     });
 
-    // JSON parse
-    const data: BaseResponse<{ energy: number }> = await res.json();
+    const data: BaseResponse<EnergyData> = await res.json();
 
-    // Eğer response başarısızsa hata fırlat
     if (!data.success) {
       throw new Error(data.message || "Enerji bilgisi alınamadı");
     }
@@ -35,6 +38,31 @@ export async function fetchEnergy(token: string): Promise<BaseResponse<{ energy:
     };
   }
 }
+export async function consumeEnergy(token: string, amount: number): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch(`${API_URL}/energy/consume`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount }),
+    });
+
+    const data = await res.json();
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  } catch (err) {
+    console.error("Enerji harcama hatası:", err);
+    return {
+      success: false,
+      message: "Enerji harcama işlemi başarısız.",
+    };
+  }
+}
+
 export async function fetchAppSettings(token: string): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
   try {
     const res = await fetch(`${API_URL}/app-settings`, {

@@ -72,20 +72,26 @@ export class UserService {
   async consumeEnergy(userId: number, amount: number): Promise<boolean> {
     const user = await this.getUserById(userId);
     const currentEnergy = await this.getCurrentEnergy(user);
-
+   
     if (currentEnergy < amount) return false;
 
     const now = new Date();
     const maxEnergyStr = await this.appSettingService.getSetting('max_energy');
     const regenMinutesStr = await this.appSettingService.getSetting('energy_regen_minutes');
-
-    const maxEnergy = maxEnergyStr ? parseInt(maxEnergyStr) : 20;
-    const regenMinutes = regenMinutesStr ? parseInt(regenMinutesStr) : 5;
+    console.log("regMin"+regenMinutesStr);
+    const maxEnergy = maxEnergyStr ? parseFloat(maxEnergyStr) : 20;
+    const regenMinutes = regenMinutesStr ? parseFloat(regenMinutesStr) : 5;
 
     // Şu anki enerjiden harcanan kadar çıkarınca, geriye kalan enerji kadar süreyi lastEnergyUpdateAt'ı geriye çekiyoruz.
     // Böylece enerji yenilenme süresi buna göre devam eder.
+    console.log("currentEnergy"+currentEnergy);
+    console.log("amount"+amount);
+    console.log("regenMinutes"+regenMinutes);
     const msToSubtract = (currentEnergy - amount) * regenMinutes * 60 * 1000;
     const newLastUpdate = new Date(now.getTime() - msToSubtract);
+    console.log(msToSubtract);
+    console.log(newLastUpdate);
+
 
     await this.userRepository.update(userId, { lastEnergyUpdateAt: newLastUpdate });
     return true;
