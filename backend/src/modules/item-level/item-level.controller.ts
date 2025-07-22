@@ -1,32 +1,20 @@
-import { Controller, Get, Post, Param, Body, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ItemLevelService } from './item-level.service';
 
 @Controller('item-levels')
 export class ItemLevelController {
   constructor(private readonly itemLevelService: ItemLevelService) {}
 
-  @Get()
-  findAll() {
-    return this.itemLevelService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.itemLevelService.findOne(id);
-  }
-
-  @Post()
-  create(@Body() data: any) {
-    return this.itemLevelService.create(data);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: string, @Body() data: any) {
-    return this.itemLevelService.update(id, data);
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.itemLevelService.delete(id);
+  // Örnek GET isteği: /item-levels/item/1/level/1
+  @Get('item/:itemId/level/:level')
+  async getByItemAndLevel(
+    @Param('itemId', ParseIntPipe) itemId: number,
+    @Param('level', ParseIntPipe) level: number,
+  ) {
+    const itemLevel = await this.itemLevelService.findByItemIdAndLevel(itemId, level);
+    if (!itemLevel) {
+      return { message: 'Kayıt bulunamadı' };
+    }
+    return itemLevel;
   }
 }

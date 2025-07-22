@@ -1,10 +1,21 @@
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ItemInstance } from './item-instance.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ItemInstanceService {
-  async findAll(): Promise<any> {}
-  async findOne(id: string): Promise<any> {}
-  async create(data: any): Promise<any> {}
-  async update(id: string, data: any): Promise<any> {}
-  async delete(id: string): Promise<any> {}
+  constructor(
+    @InjectRepository(ItemInstance)
+    private itemInstanceRepo: Repository<ItemInstance>,
+  ) {}
+
+  async findByUserId(userId: number) {
+    return this.itemInstanceRepo.find({
+      where: { user: { id: userId } },
+      relations: ['item'],
+    });
+  }
+
+  // Diğer metotlar...
 }

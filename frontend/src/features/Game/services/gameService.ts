@@ -85,3 +85,26 @@ export async function fetchAppSettings(token: string): Promise<BaseResponse<{ ma
   }
 }
 
+export async function fetchUserItems(token: string, userId: number): Promise<any[]> {
+  const res = await fetch(`${API_URL}/item-instances/user/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Item verisi alınamadı.");
+  return await res.json();
+}
+
+export async function fetchItemLevel(token: string, itemId: number, level: number): Promise<any> {
+  const res = await fetch(`${API_URL}/item-levels/item/${itemId}/level/${level}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Item level verisi alınamadı.");
+  return await res.json();
+}
+
+

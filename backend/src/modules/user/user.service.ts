@@ -4,6 +4,8 @@ import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AppSettingService } from '../app-setting/app-setting.service';
+import {Item} from "../item/item.entity";
+import { ItemInstance } from '../item-instance/item-instance.entity';
 
 export type ValidateUserResult = 'notfound' | 'invalid' | { id: number; status: 'valid' };
 
@@ -13,6 +15,11 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly appSettingService: AppSettingService, 
+    @InjectRepository(Item)
+    private readonly itemRepository: Repository<Item>,
+  
+    @InjectRepository(ItemInstance)
+    private readonly itemInstanceRepository: Repository<ItemInstance>,
   ) {}
 
   // Kullanıcıyı email ve şifreyle doğrulama
@@ -30,7 +37,7 @@ export class UserService {
   async registerUser(email: string, password: string, full_name: string): Promise<boolean> {
     const existing = await this.userRepository.findOne({ where: { email } });
     if (existing) return false;
-
+  
     const hashed = await bcrypt.hash(password, 10);
     const newUser = this.userRepository.create({
       email,
@@ -38,10 +45,25 @@ export class UserService {
       full_name,
       lastEnergyUpdateAt: new Date(), // enerji başlangıcı
     });
-
-    await this.userRepository.save(newUser);
+  
+    const savedUser = await this.userRepository.save(newUser);
+  
+    // 1'den 8'e kadar olan item'ları al
+    const items = await this.itemRepository.findByIds([1, 2, 3, 4, 5, 6, 7, 8]);
+  
+    const instances = items.map((item) => {
+      return this.itemInstanceRepository.create({
+        user: savedUser,
+        item,
+        currentLevel: 1,
+      });
+    });
+  
+    await this.itemInstanceRepository.save(instances);
+  
     return true;
   }
+  
 
   // Belirli bir kullanıcıyı getir
   async getUserById(userId: number): Promise<User> {
