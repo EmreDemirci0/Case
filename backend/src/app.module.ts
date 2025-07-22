@@ -18,6 +18,10 @@ import { ItemService } from './modules/item/item.service';
 import { ItemLevelService } from './modules/item-level/item-level.service';
 import { ItemInstanceService } from './modules/item-instance/item-instance.service';
 import { ItemInstanceController } from './modules/item-instance/item-instance.controller';
+import { AppSetting } from './modules/app-setting/app-setting.entity';
+import { AppSettingModule } from './modules/app-setting/app-setting.module';
+import { AppSettingController } from './modules/app-setting/app-setting.controller';
+import { AppSettingService } from './modules/app-setting/app-setting.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -27,15 +31,16 @@ import { ItemInstanceController } from './modules/item-instance/item-instance.co
       username: 'postgres', // kendi PostgreSQL kullanıcı adını yaz
       password: 'localhost', // kendi şifreni yaz
       database: 'CaseNS', // pgAdmin'de oluşturduğun veritabanı adı
-      entities: [User, Item, ItemInstance, ItemLevel],
+      entities: [User, Item, ItemInstance, ItemLevel,AppSetting],
       synchronize: true, // otomatik tablo oluşturma, prod'da false olmalı
     }),
     TypeOrmModule.forFeature([User]), UserModule,
     TypeOrmModule.forFeature([Item]), ItemModule,
     TypeOrmModule.forFeature([ItemLevel]), ItemLevelModule,
     TypeOrmModule.forFeature([ItemInstance]), ItemInstanceModule,
+    TypeOrmModule.forFeature([AppSetting]), AppSettingModule,
   ],
-  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController],
-  providers: [AppService, UserService, ItemService, ItemLevelService, ItemInstanceService],
+  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController,AppSettingController],
+  providers: [AppService, UserService, ItemService, ItemLevelService, ItemInstanceService,AppSettingService],
 })
 export class AppModule { }

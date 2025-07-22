@@ -1,49 +1,59 @@
-// Yoklama kaydetme servisi
-import { API_URL } from '../../../config';
+// src/services/energyService.ts
+import { API_URL } from "../../../config";
 
-interface AttendanceSaveItem {
-    student_id: number;
-    morning_status: number; // 0: geldi, 1: geç, 2: gelmedi, 3: izinli
-    afternoon_status: number; // 0: geldi, 1: geç, 2: gelmedi, 3: izinli
+interface BaseResponse<T = any> {
+  data: T | null;
+  success: boolean;
+  message: string;
 }
 
-export async function saveBulkAttendance(
-    date: string,
-    attendances: AttendanceSaveItem[],
-    token: string
-): Promise<any> {
-    const res = await fetch(`${API_URL}/attendance/bulk`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ date, attendances }),
+export async function fetchEnergy(token: string): Promise<BaseResponse<{ energy: number }>> {
+  try {
+    const res = await fetch(`${API_URL}/energy`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // JSON parse
+    const data: BaseResponse<{ energy: number }> = await res.json();
+
+    // Eğer response başarısızsa hata fırlat
+    if (!data.success) {
+      throw new Error(data.message || "Enerji bilgisi alınamadı");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Enerji servis hatası:", error);
+    return {
+      data: null,
+      success: false,
+      message: error instanceof Error ? error.message : "Bilinmeyen hata",
+    };
+  }
+}
+export async function fetchAppSettings(token: string): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
+  try {
+    const res = await fetch(`${API_URL}/app-settings`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
     });
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || 'Yoklama kaydedilemedi');
+    if (!data.success) throw new Error(data.message || "Ayarlar alınamadı");
     return data;
+  } catch (error) {
+    console.error('Ayarlar servis hatası:', error);
+    return {
+      success: false,
+      data: null,
+      message: error instanceof Error ? error.message : "Bilinmeyen hata"
+    };
+  }
 }
 
-// Belirli bir tarih ve sınıf için yoklama kayıtlarını çek
-export async function fetchAttendanceByDateAndClass(date: string, grade: string, token: string): Promise<any[]> {
-    const res = await fetch(`${API_URL}/attendance/by-date-class?date=${date}&grade=${encodeURIComponent(grade)}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (!res.ok) throw new Error('Yoklama kayıtları alınamadı');
-    return await res.json();
-}
-
-// // Belirli bir tarihten önce o sınıf için yoklama var mı?
-// export async function checkAnyAttendanceBefore(date: string, grade: string, token: string): Promise<boolean> {
-//     const res = await fetch(`${API_URL}/attendance/any-before?date=${date}&grade=${encodeURIComponent(grade)}`, {
-//         headers: {
-//             Authorization: `Bearer ${token}`,
-//         },
-//     });
-//     if (!res.ok) return false;
-//     const data = await res.json();
-//     return !!data.exists;
-// }

@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { t as localize, ROUTES } from "../../../config";
 import useDarkMode from "../../../hooks/useDarkMode";
 import { sendRegisterRequest } from "../services/authService";
+import { useNotification } from "../../../components/common/NotificationContext";
 
 export default function RegisterForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const { setNotificationMessage } = useNotification();
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -51,6 +52,7 @@ export default function RegisterForm() {
 
     try {
       const response = await sendRegisterRequest(fullName, email, password);
+      console.log(response);
       if (response.success) {
         setFullName("");
         setEmail("");
@@ -59,6 +61,7 @@ export default function RegisterForm() {
         setEmailError("");
         setPasswordError("");
         setConfirmPasswordError("");
+        setNotificationMessage(localize("registrationSuccess"), "green");
         navigate(ROUTES.LOGIN);
       } else {
         setEmailError(localize("emailAlreadyExists"));
@@ -66,6 +69,7 @@ export default function RegisterForm() {
         setConfirmPasswordError("");
       }
     } catch {
+      setNotificationMessage(localize("unknownError"), "red");
     }
   };
 

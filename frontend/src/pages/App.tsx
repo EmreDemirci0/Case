@@ -9,6 +9,7 @@ import RedirectIfAuth from "../components/auth/RedirectIfAuth";
 import RootRedirect from "../components/auth/RootRedirect";
 import { ROUTES } from "../config/routes";
 import Game from "../features/Game/pages/Game";
+import { NotificationProvider } from "../components/common/NotificationContext";
 
 
 
@@ -17,7 +18,7 @@ function App() {
   return (
     <div className="App">
       {/* <UserProvider> */}
-     
+      <NotificationProvider>
         <BrowserRouter>
           {/* 🔔 Eğer mesaj varsa Notification bileşeni göster */}
           
@@ -28,7 +29,7 @@ function App() {
 
             {/* Giriş ve kayıt (eğer giriş yaptıysa yönlendir) */}
             
-            {/* <Route
+            <Route
               path={ROUTES.LOGIN}
               element={
                 <RedirectIfAuth>
@@ -43,21 +44,21 @@ function App() {
                   <RegisterForm />
                 </RedirectIfAuth>
               }
-            /> */}
+            />
 
             {/* Sadece giriş yaptıysa açılabilecek route - Layout ile sarmalanmış */}
             <Route
               path={ROUTES.GAME}
               element={
-                // <RequireAuth>
+                 <RequireAuth>
                     <Game />
-                // </RequireAuth>
+                 </RequireAuth>
               }
             />
           </Routes>
 
         </BrowserRouter>
-
+        </NotificationProvider>
       {/* </UserProvider> */}
     </div>
   );

@@ -2,13 +2,13 @@ import { Entity, Column, PrimaryGeneratedColumn, Unique, BeforeInsert, CreateDat
 import * as bcrypt from 'bcrypt';
 
 @Entity('users')
-@Unique(['username', 'email'])
+@Unique(['email'])
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50 })
-  username: string;
+  @Column({ length: 50, nullable: true })
+  full_name: string;
 
   @Column({ length: 100 })
   email: string;
@@ -20,10 +20,13 @@ export class User {
   created_at: Date;
 
 
-  @BeforeInsert()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  lastEnergyUpdateAt: Date;
+
+  // @BeforeInsert()
+  // async hashPassword() {
+  //   this.password = await bcrypt.hash(this.password, 10);
+  // }
 }
-  // @OneToMany kaldırıldı çünkü gerek yok
+// @OneToMany kaldırıldı çünkü gerek yok
 

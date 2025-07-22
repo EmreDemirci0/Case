@@ -5,7 +5,7 @@ import { t as localize, ROUTES } from "../../../config";
 import { useNavigate } from "react-router-dom";
 import useDarkMode from "../../../hooks/useDarkMode";
 import { sendLoginRequest } from "../services/authService";
-
+import { useNotification } from "../../../components/common/NotificationContext";
 export default function LoginForm() {
   const navigate = useNavigate();
 
@@ -14,6 +14,7 @@ export default function LoginForm() {
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const { setNotificationMessage } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,17 +29,14 @@ export default function LoginForm() {
     }
     if (hasError) return;
     try {
-      const response = await sendLoginRequest(email, password);
-      console.log("try");
+      const response = await sendLoginRequest(email, password);   
+      console.log(response);
       if (response.data) {
-        console.log("try if");
         if (response != null && response.success === true) {//* Success
-          console.log("try if if");
           localStorage.setItem('token', response.data.token);
-   
+          setNotificationMessage(localize('loginSuccess'), "green");
           navigate(ROUTES.GAME);
         } else {
-          console.log("try if else");
           setPassword("");
           if (response.data.errorType === "email") {
             setEmailError(localize('loginEmailNotFound'));
