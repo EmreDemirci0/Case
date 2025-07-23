@@ -1,16 +1,20 @@
+// Game.tsx
 import React, { useEffect, useState } from "react";
 import {
   consumeEnergy,
   fetchAppSettings,
   fetchEnergy,
   fetchItemLevel,
+  fetchProgress,
   fetchUserItems,
+  increaseProgress,
+  fetchLevelUp,
 } from "../../Game/services/gameService";
 import { useAuth } from "../../../hooks/useAuth";
 import useLogout from "../../../hooks/useLogout";
 
 function Game() {
-  const { token } = useAuth();
+  const { token, userId } = useAuth();
   const { logout } = useLogout();
 
   const [energy, setEnergy] = useState(0);
@@ -20,42 +24,52 @@ function Game() {
   const [secondsToNextEnergy, setSecondsToNextEnergy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Burada userItems ve itemLevels state'leri tutuyoruz
   const [userItems, setUserItems] = useState<any[]>([]);
   const [itemLevels, setItemLevels] = useState<any[]>([]);
+  const [progressData, setProgressData] = useState<Record<number, number>>({});
 
   const energyPercent = Math.min(100, (energy / maxEnergy) * 100);
+  const MAX_LEVEL = 3;
 
-  const { userId } = useAuth();
-
+  // Veri çekme
   useEffect(() => {
     async function fetchData() {
+      if (!token || !userId) return;
       try {
-        if (!token || !userId) return;
-
-        // Kullanıcı itemlarını çek
         const userItemsRes = await fetchUserItems(token, userId);
         setUserItems(userItemsRes);
-        console.log("fetchUserItems sonucu:", userItemsRes);
 
-        // Her item için itemLevel verilerini çek
         const itemLevelsRes = await Promise.all(
-          userItemsRes.map((itemInstance: any) => {
-            const itemId = itemInstance.item.id;
-            const level = itemInstance.currentLevel;
-            return fetchItemLevel(token, itemId, level);
-          })
+          userItemsRes.map((itemInstance: any) =>
+            fetchItemLevel(token, itemInstance.item.id, itemInstance.currentLevel)
+          )
         );
         setItemLevels(itemLevelsRes);
-        console.log("fetchItemLevel sonuçları:", itemLevelsRes);
-      } catch (error) {
-        console.error("Veri çekme hatası:", error);
+      } catch (err) {
+        console.error("Veri çekme hatası:", err);
       }
     }
-
     fetchData();
   }, [token, userId]);
+
+  useEffect(() => {
+    if (!token || userItems.length === 0) return;
+
+    async function loadProgresses() {
+      const newProgressData: Record<number, number> = {};
+      for (const item of userItems) {
+        try {
+          const res = await fetchProgress(token || "", item.id);
+          newProgressData[item.id] = res.progress;
+        } catch (e) {
+          console.error("Progress alınamadı", e);
+        }
+      }
+      setProgressData(newProgressData);
+    }
+
+    loadProgresses();
+  }, [token, userItems]);
 
   useEffect(() => {
     if (!token) return;
@@ -63,7 +77,6 @@ function Game() {
     async function loadData() {
       try {
         setLoading(true);
-
         const settingsRes = await fetchAppSettings(token || "");
         if (settingsRes.data) {
           setMaxEnergy(Number(settingsRes.data.maxEnergy));
@@ -77,7 +90,7 @@ function Game() {
         }
 
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError("Enerji verileri alınamadı.");
         setLoading(false);
       }
@@ -91,24 +104,25 @@ function Game() {
 
     const interval = setInterval(() => {
       const now = new Date();
-      const diffMs = now.getTime() - new Date(lastUpdate).getTime();
+      const diffMs = now.getTime() - lastUpdate.getTime();
       const regenMs = regenMinutes * 60 * 1000;
-
       const regenerated = Math.floor(diffMs / regenMs);
       const newEnergy = Math.min(maxEnergy, regenerated);
       setEnergy(newEnergy);
 
-      const timeSinceLast = diffMs % regenMs;
-      const timeLeftMs = regenMs - timeSinceLast;
+      const timeLeftMs = regenMs - (diffMs % regenMs);
       setSecondsToNextEnergy(Math.floor(timeLeftMs / 1000));
     }, 1000);
 
     return () => clearInterval(interval);
   }, [lastUpdate, regenMinutes, maxEnergy]);
 
-  const handleConsumeEnergy = async () => {
-    if (!token) return alert("Lütfen giriş yapın.");
-
+  // Enerji harca
+  const handleConsumeEnergy = async (): Promise<boolean> => {
+    if (!token) {
+      alert("Lütfen giriş yapın.");
+      return false;
+    }
     try {
       const result = await consumeEnergy(token, 1);
       if (result.success) {
@@ -117,11 +131,84 @@ function Game() {
           setEnergy(energyRes.data.energy);
           setLastUpdate(new Date(energyRes.data.lastEnergyUpdateAt));
         }
+        return true;
       } else {
         alert(result.message);
+        return false;
       }
     } catch {
       alert("Enerji harcama sırasında hata oluştu.");
+      return false;
+    }
+  };
+
+  // Progress arttır
+  const handleIncreaseProgress = async (cardId: number, index: number) => {
+    // Önce enerji harca
+    const energyConsumed = await handleConsumeEnergy();
+    if (!energyConsumed) return;
+
+    try {
+      const res = await increaseProgress(token || "", cardId, 2); // örn %2 arttır
+      setProgressData((prev) => ({
+        ...prev,
+        [cardId]: res.progress,
+      }));
+
+      // Progress 100 ise itemLevel'i güncellemek için yeniden çekebiliriz
+      if (res.progress >= 100) {
+        await refreshItemLevel(cardId, index);
+      }
+
+      console.log(`Progress güncellendi: ${res.progress}%`);
+    } catch (e) {
+      console.error("Progress artırma hatası:", e);
+    }
+  };
+
+  // Item level ve açıklama yenile
+  const refreshItemLevel = async (cardId: number, index: number) => {
+    try {
+      const updatedLevel = await fetchItemLevel(token || "", userItems[index].item.id, userItems[index].currentLevel);
+      setItemLevels((prev) => {
+        const newLevels = [...prev];
+        newLevels[index] = updatedLevel;
+        return newLevels;
+      });
+    } catch (e) {
+      console.error("Item level yenileme hatası:", e);
+    }
+  };
+
+  // Seviye atla
+  const handleLevelUp = async (cardId: number, index: number) => {
+    try {
+      const res = await fetchLevelUp(token || "", cardId);
+      // Seviyeyi artır ve progress sıfırla
+      setUserItems((prev) => {
+        const newItems = [...prev];
+        newItems[index] = {
+          ...newItems[index],
+          currentLevel: res.level,
+          progress: 0,
+        };
+        return newItems;
+      });
+
+      // Item level bilgisi güncelle
+      await refreshItemLevel(cardId, index);
+
+      // Progress verisini de sıfırla
+      setProgressData((prev) => ({
+        ...prev,
+        [cardId]: 0,
+      }));
+
+      console.log(`Seviye atlandı: ${res.level}`);
+    } catch (e: any) {
+      // Backend'den gelen max seviye hatasını yakala
+      alert(`Seviye atlama başarısız: ${e.message || e}`);
+      console.error("Seviye atlama hatası:", e);
     }
   };
 
@@ -133,13 +220,9 @@ function Game() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white px-4 py-6">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Çıkış */}
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex justify-end">
-          <button
-            onClick={() => logout(token || "")}
-            className="text-blue-400 text-sm hover:underline"
-          >
+          <button onClick={() => logout(token || "")} className="text-blue-400 text-sm hover:underline">
             Çıkış Yap
           </button>
         </div>
@@ -148,8 +231,8 @@ function Game() {
         <div className="bg-[#1f1f1f] p-4 rounded-xl shadow-md space-y-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <img src="/energyIcon.png" alt="Enerji" className="w-5 h-5" />
-              <span className="text-sm font-semibold text-white">Enerji</span>
+              <img src="/energyIcon.png" alt="Enerji" className="w-10 h-10" />
+              <span className="text-sm font-semibold">Enerji</span>
             </div>
             <span className="text-xs text-pink-400 font-medium">
               %{Math.floor(energyPercent)} ({energy}/{maxEnergy})
@@ -165,12 +248,12 @@ function Game() {
               {loading
                 ? "Yükleniyor..."
                 : error
-                  ? error
-                  : energy >= maxEnergy
-                    ? "Enerji Dolu!"
-                    : secondsToNextEnergy !== null
-                      ? `1 Yenilenmesine Kalan: ${formatSeconds(secondsToNextEnergy)}`
-                      : ""}
+                ? error
+                : energy >= maxEnergy
+                ? "Enerji Dolu!"
+                : secondsToNextEnergy !== null
+                ? `1 Yenilenmesine Kalan: ${formatSeconds(secondsToNextEnergy)}`
+                : ""}
             </div>
           </div>
 
@@ -179,72 +262,101 @@ function Game() {
               onClick={handleConsumeEnergy}
               className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 text-sm rounded-lg transition"
             >
-              1 Enerji Harca
+              1 Enerji Harca (Test)
             </button>
           </div>
         </div>
 
-        {/* Sekmeler */}
-        <div className="flex items-center gap-2 mb-2">
-          {["Tüm Seviyeler", "Sv1", "Sv2", "Max Sv"].map((tab) => (
-            <button
-              key={tab}
-              className="bg-[#2b2b2b] px-4 py-1 text-sm rounded-full text-white font-medium hover:bg-pink-600 transition"
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* Item Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Kartlar */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {userItems.length > 0 && itemLevels.length === userItems.length ? (
             userItems.map((itemInstance, i) => {
               const itemLevel = itemLevels[i];
+              const progress = progressData[itemInstance.id] || 0;
+              const isMaxLevel = itemInstance.currentLevel >= MAX_LEVEL;
+              const isReadyToLevelUp = progress >= 100;
+              const showLevelUpButton = isReadyToLevelUp && !isMaxLevel;
 
               return (
                 <div
                   key={itemInstance.id}
-                  className="relative rounded-2xl overflow-hidden h-52 border border-[#353535] shadow-lg group"
-                  style={{
-                    backgroundImage: `url(/${itemLevel.imageUrl || "level1.png"})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
+                  className="relative aspect-[111/92] rounded-2xl overflow-hidden border border-[#353535] shadow-lg group bg-cover bg-center"
+                  style={{ backgroundImage: `url(/${itemLevel.imageUrl || "level1.png"})` }}
                 >
-                  {/* Seviye etiketi */}
-                  <div className="absolute top-0 right-0 bg-black bg-opacity-50 text-white text-[11px] px-2 py-[2px] rounded-bl-lg z-10">
+                  <div
+                    className="absolute top-2 right-2 text-white text-[15px] z-10"
+                    style={{
+                      backgroundColor: "transparent",
+                      fontFamily: "Galano Grotesque, sans-serif",
+                      fontWeight: 600,
+                      fontStyle: "normal",
+                      lineHeight: "120%",
+                      letterSpacing: "0%",
+                      textAlign: "right",
+                      fontVariantNumeric: "lining-nums tabular-nums",
+                    }}
+                  >
                     Seviye {itemInstance.currentLevel}
                   </div>
 
-                  {/* Alt içerik alanı */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#121212cc] to-transparent p-3 space-y-1 z-10">
-                    {/* Başlık */}
-                    <h3 className="text-white text-sm font-semibold">{itemLevel.title}</h3>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-3 space-y-1 z-10">
+                    <h3 className="text-white text-sm font-bold leading-snug">{itemLevel.title}</h3>
+                    <p className="text-xs text-gray-300 leading-tight line-clamp-2">{itemLevel.description}</p>
 
-                    {/* Açıklama */}
-                    <p className="text-xs text-gray-300 leading-tight line-clamp-2">
-                      {itemLevel.description}
-                    </p>
-
-                    {/* Enerji + Buton */}
-                    <div className="flex justify-between items-center mt-1">
-                      <div className="flex items-center gap-1">
-                        <img src="/energyIcon.png" alt="Enerji" className="w-4 h-4" />
-                        <span className="text-xs text-pink-400 font-medium">
-                          {itemLevel.energyCost || 50}
-                        </span>
+                    <div className="flex items-center gap-2 mt-2">
+                      {/* Slider %50 */}
+                      <div className="relative w-1/2 h-8 bg-[#2b2b2b] rounded-full overflow-hidden border border-[#444]">
+                        <div
+                          className="absolute top-0 left-0 h-full bg-[#EE39A8] shadow-[0_0_12px_4px_rgba(238,57,168,0.6)] transition-all duration-500 ease-in-out"
+                          style={{ width: `${progress}%` }}
+                        />
+                        <div
+                          className="absolute inset-0 flex items-center justify-center text-white text-[13px] font-bold"
+                          style={{
+                            fontFamily: "Galano Grotesque, sans-serif",
+                            fontWeight: 600,
+                            lineHeight: "120%",
+                          }}
+                        >
+                          %{progress}
+                        </div>
                       </div>
+
+                      {/* Buton %50 */}
                       <button
-                        className={`text-xs px-3 py-[4px] rounded-md ${itemInstance.currentLevel > 1 ? "bg-indigo-700" : "bg-yellow-500"
-                          } text-white font-medium shadow hover:brightness-110 transition`}
+                        disabled={isMaxLevel}
+                        className={`w-1/2 rounded-full h-8 flex items-center justify-center gap-2 shadow transition
+                          ${isMaxLevel ? "bg-gray-600 cursor-not-allowed" : showLevelUpButton ? "bg-[#EE39A8] text-white" : "bg-[#FDE68A] text-black"}
+                        `}
+                        style={{
+                          fontFamily: "'Galano Grotesque', sans-serif",
+                          fontWeight: 600,
+                          fontStyle: "normal",
+                          fontSize: "15px",
+                          lineHeight: "120%",
+                          color: isMaxLevel ? "#aaa" : showLevelUpButton ? "white" : "black",
+                        }}
+                        onClick={() => {
+                          if (isMaxLevel) return;
+                          if (showLevelUpButton) {
+                            handleLevelUp(itemInstance.id, i);
+                          } else {
+                            handleIncreaseProgress(itemInstance.id, i);
+                          }
+                        }}
                       >
-                        {itemInstance.currentLevel > 1 ? "Yükselt" : "Geliştir"}
+                        <span
+                          style={{ color: isMaxLevel ? "#aaa" : showLevelUpButton ? "white" : "#EE39A8" }}
+                          className="flex items-center gap-1"
+                        >
+                          <img src="/energyIcon.png" className="w-7 h-7" alt="Enerji" />
+                          {showLevelUpButton ? null : `-${itemLevel.energyCost || 1}`}
+                        </span>
+                        <span>{isMaxLevel ? "Max Seviye" : showLevelUpButton ? "Yükselt" : "Geliştir"}</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* Karanlık katman */}
                   <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition" />
                 </div>
               );
@@ -253,7 +365,7 @@ function Game() {
             [...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="bg-[#2b2b2b] rounded-xl p-3 border border-gray-700 h-44 flex items-center justify-center text-gray-500"
+                className="bg-[#2b2b2b] aspect-[111/92] rounded-xl border border-gray-700 flex items-center justify-center text-gray-500"
               >
                 Yükleniyor...
               </div>
@@ -263,7 +375,6 @@ function Game() {
       </div>
     </div>
   );
-
 }
 
 export default Game;

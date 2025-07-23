@@ -11,7 +11,7 @@ export default function useLogout() {
   /**
    * Logout fonksiyonu, zorunlu olarak güncel token parametresi alır.
    */
-  const logout = useCallback(async (token: string) => {
+  const logout = useCallback(async (token: string|null) => {
     console.log("logout", token);
     if (!token) return;
     try {

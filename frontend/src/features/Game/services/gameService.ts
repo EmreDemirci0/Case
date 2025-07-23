@@ -12,7 +12,7 @@ interface EnergyData {
   lastEnergyUpdateAt: string;
 }
 
-export async function fetchEnergy(token: string): Promise<BaseResponse<EnergyData>> {
+export async function fetchEnergy(token?: string | null): Promise<BaseResponse<EnergyData>> {
   try {
     const res = await fetch(`${API_URL}/energy`, {
       method: "GET",
@@ -63,7 +63,7 @@ export async function consumeEnergy(token: string, amount: number): Promise<{ su
   }
 }
 
-export async function fetchAppSettings(token: string): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
+export async function fetchAppSettings(token: string | null): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
   try {
     const res = await fetch(`${API_URL}/app-settings`, {
       method: 'GET',
@@ -96,7 +96,7 @@ export async function fetchUserItems(token: string, userId: number): Promise<any
   return await res.json();
 }
 
-export async function fetchItemLevel(token: string, itemId: number, level: number): Promise<any> {
+export async function fetchItemLevel(token: string|null, itemId: number, level: number): Promise<any> {
   const res = await fetch(`${API_URL}/item-levels/item/${itemId}/level/${level}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -106,5 +106,58 @@ export async function fetchItemLevel(token: string, itemId: number, level: numbe
   if (!res.ok) throw new Error("Item level verisi alınamadı.");
   return await res.json();
 }
+
+export async function fetchProgress(token: string | null, cardId: number): Promise<{ progress: number; energy: number }> {
+  const res = await fetch(`${API_URL}/item-instances/progress`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cardId }),
+  });
+
+  if (!res.ok) throw new Error('Progress verisi alınamadı.');
+
+  const data = await res.json();
+  return data; // ya da data.data, eğer backend bunu sarıyorsa
+}
+export async function increaseProgress(token: string, cardId: number, increment = 2): Promise<{ progress: number }> {
+  const res = await fetch(`${API_URL}/item-instances/increase-progress`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cardId, increment }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Progress arttırılamadı: ${errorText}`);
+  }
+
+  return res.json();
+}
+
+export async function fetchLevelUp(token: string, cardId: number): Promise<{ level: number; progress: number }> {
+  const res = await fetch(`${API_URL}/item-instances/level-up`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cardId }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Seviye atlama başarısız: ${errorText}`);
+  }
+
+  const data = await res.json();
+  return data; // veya data.data, backend cevabına göre
+}
+
 
 

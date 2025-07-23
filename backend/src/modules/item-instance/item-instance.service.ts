@@ -16,6 +16,16 @@ export class ItemInstanceService {
       relations: ['item'],
     });
   }
+  async findById(id: number) {
+    return this.itemInstanceRepo.findOne({
+      where: { id },
+      relations: ['user'], // enerjiye erişmek için
+    });
+  }
+  
+  async save(instance: ItemInstance) {
+    return this.itemInstanceRepo.save(instance);
+  }
 
   // Diğer metotlar...
 }

@@ -16,6 +16,9 @@ export class ItemInstance {
   @Column({ type: 'int', default: 1 })
   currentLevel: number;
 
+  @Column({ default: 0 })
+  progress: number;
+
   @CreateDateColumn()
   createdAt: Date;
 }
