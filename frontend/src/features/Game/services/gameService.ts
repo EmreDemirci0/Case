@@ -14,7 +14,7 @@ interface EnergyData {
 
 export async function fetchEnergy(token?: string|null): Promise<BaseResponse<EnergyData>> {
   try {
-    const res = await fetch(`${API_URL}/energy`, {
+    const res = await fetch(`${API_URL}/api/energy`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -24,9 +24,9 @@ export async function fetchEnergy(token?: string|null): Promise<BaseResponse<Ene
 
     const data: BaseResponse<EnergyData> = await res.json();
 
-    if (!data.success) {
-      throw new Error(data.message || "Enerji bilgisi alınamadı");
-    }
+    // if (!data.success) {
+    //   throw new Error(data.message || "Enerji bilgisi alınamadı");
+    // }
 
     return data;
   } catch (error) {
@@ -40,7 +40,7 @@ export async function fetchEnergy(token?: string|null): Promise<BaseResponse<Ene
 }
 export async function consumeEnergy(token: string, amount: number): Promise<{ success: boolean; message: string }> {
   try {
-    const res = await fetch(`${API_URL}/energy/consume`, {
+    const res = await fetch(`${API_URL}/api/energy/consume`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ export async function fetchItemLevel(token: string|null, itemId: number, level: 
 }
 
 export async function fetchProgress(token: string|null, cardId: number): Promise<{ progress: number; energy: number }> {
-  const res = await fetch(`${API_URL}/item-instances/progress`, {
+  const res = await fetch(`${API_URL}/api/progress`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -123,7 +123,7 @@ export async function fetchProgress(token: string|null, cardId: number): Promise
   return data; // ya da data.data, eğer backend bunu sarıyorsa
 }
 export async function increaseProgress(token: string, cardId: number, increment = 2): Promise<{ progress: number }> {
-  const res = await fetch(`${API_URL}/item-instances/increase-progress`, {
+  const res = await fetch(`${API_URL}/api/increase-progress`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -141,7 +141,7 @@ export async function increaseProgress(token: string, cardId: number, increment 
 }
 
 export async function fetchLevelUp(token: string|null, cardId: number): Promise<{ level: number; progress: number }> {
-  const res = await fetch(`${API_URL}/item-instances/level-up`, {
+  const res = await fetch(`${API_URL}/api/level-up`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

@@ -53,34 +53,34 @@ export class UserController {
     res.status(200).json(new BaseResponse(null, true, 'Çıkış başarılı'));
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('/energy')
-  async getEnergy(@Req() req) {
-    try {
-      const user = await this.userService.getUserById(req.user.userId);
-      if (!user) {
-        return new BaseResponse(null, false, 'Kullanıcı bulunamadı');
-      }
-      const energy = await this.userService.getCurrentEnergy(user);
-      const lastEnergyUpdateAt = user.lastEnergyUpdateAt;
-      return new BaseResponse({ energy, lastEnergyUpdateAt }, true, 'Enerji bilgisi başarıyla getirildi');
-    } catch (error) {
-      return new BaseResponse(null, false, 'Enerji bilgisi getirilirken hata oluştu');
-    }
-  }
-  @UseGuards(JwtAuthGuard)
-  @Post('/energy/consume')
-  async consumeEnergy(@Req() req, @Body() body: { amount: number }) {
-    const userId = req.user.userId;
-    const amount = body.amount;
+  // @UseGuards(JwtAuthGuard)
+  // @Get('/energy')
+  // async getEnergy(@Req() req) {
+  //   try {
+  //     const user = await this.userService.getUserById(req.user.userId);
+  //     if (!user) {
+  //       return new BaseResponse(null, false, 'Kullanıcı bulunamadı');
+  //     }
+  //     const energy = await this.userService.getCurrentEnergy(user);
+  //     const lastEnergyUpdateAt = user.lastEnergyUpdateAt;
+  //     return new BaseResponse({ energy, lastEnergyUpdateAt }, true, 'Enerji bilgisi başarıyla getirildi');
+  //   } catch (error) {
+  //     return new BaseResponse(null, false, 'Enerji bilgisi getirilirken hata oluştu');
+  //   }
+  // }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('/energy/consume')
+  // async consumeEnergy(@Req() req, @Body() body: { amount: number }) {
+  //   const userId = req.user.userId;
+  //   const amount = body.amount;
 
-    const success = await this.userService.consumeEnergy(userId, amount);
-    if (!success) {
-      return new BaseResponse(null, false, 'Yeterli enerjiniz yok.');
-    }
+  //   const success = await this.userService.consumeEnergy(userId, amount);
+  //   if (!success) {
+  //     return new BaseResponse(null, false, 'Yeterli enerjiniz yok.');
+  //   }
 
-    return new BaseResponse(null, true, 'Enerji başarıyla harcandı.');
-  }
+  //   return new BaseResponse(null, true, 'Enerji başarıyla harcandı.');
+  // }
 
 
 

@@ -26,9 +26,10 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     async function refreshEnergy() {
       try {
         const energyRes = await fetchEnergy(token);
-        if (energyRes.data) {
-          setEnergy(energyRes.data.energy);
-          setLastUpdate(new Date(energyRes.data.lastEnergyUpdateAt));
+        console.log(energyRes);
+        if (energyRes) {
+          setEnergy(energyRes.energy);
+          setLastUpdate(new Date(energyRes.lastEnergyUpdateAt));
         }
       } catch (err) {
         console.error("Enerji yenilenirken hata:", err);
@@ -52,9 +53,11 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
         }
 
         const energyRes = await fetchEnergy(token);
-        if (energyRes.data) {
-          setEnergy(energyRes.data.energy);
-          setLastUpdate(new Date(energyRes.data.lastEnergyUpdateAt));
+        console.log("2");
+        console.log(energyRes);
+        if (energyRes) {
+          setEnergy(energyRes.energy);
+          setLastUpdate(new Date(energyRes.lastEnergyUpdateAt));
         }
 
         setLoading(false);
@@ -93,31 +96,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     }
   }, [energy, lastUpdate, onEnergyUpdate]);
 
-  // Enerji harca
-  const handleConsumeEnergy = async (): Promise<boolean> => {
-    if (!token) {
-      alert("Lütfen giriş yapın.");
-      return false;
-    }
-    try {
-      const result = await consumeEnergy(token, 1);
-      if (result.success) {
-        const energyRes = await fetchEnergy(token);
-        if (energyRes.data) {
-          setEnergy(energyRes.data.energy);
-          setLastUpdate(new Date(energyRes.data.lastEnergyUpdateAt));
-        }
-        return true;
-      } else {
-        alert(result.message);
-        return false;
-      }
-    } catch {
-      alert("Enerji harcama sırasında hata oluştu.");
-      return false;
-    }
-  };
-
   const formatSeconds = (s: number) => {
     const m = Math.floor(s / 60).toString().padStart(2, "0");
     const sec = (s % 60).toString().padStart(2, "0");
@@ -125,45 +103,45 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
   };
 
   return (
-    <div className="bg-[#1f1f1f] p-4 rounded-xl shadow-md space-y-2">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <img src="/energyIcon.png" alt="Enerji" className="w-10 h-10" />
-          <span className="text-sm font-semibold">Enerji</span>
-        </div>
-        <span className="text-xs text-pink-400 font-medium">
-          %{Math.floor(energyPercent)} ({energy}/{maxEnergy})
+    <div className="w-full px-4  pb-2 text-white">
+      <div className="flex items-center gap-2 mb-3">
+        <img
+          src="/energyIcon.png"
+          alt="Enerji"
+          className="w-10 h-10 drop-shadow-[0_0_8px_#f472b6]"
+        />
+        <span className="text-[#fcd34d] font-bold text-lg">Enerji</span>
+        <span className="ml-auto text-[11px] min-[400px]:text-sm text-gray-400">
+          {loading || energy >= maxEnergy
+            ? ""
+            : secondsToNextEnergy !== null
+              ? `%1 Yenilenmesine Kalan: ${formatSeconds(secondsToNextEnergy)}`
+              : ""}
         </span>
       </div>
 
-      <div className="relative h-4 bg-[#333] rounded-full overflow-hidden">
+      <div className="relative h-6 bg-[#2c2c2c] rounded-full overflow-hidden shadow-inner">
         <div
-          className="absolute top-0 left-0 h-full bg-pink-500 transition-all duration-500"
+          className="absolute top-0 left-0 h-full bg-pink-500 rounded-full shadow-[0_0_10px_#ec4899] transition-all duration-500"
           style={{ width: `${energyPercent}%` }}
         />
-        <div className="absolute w-full text-center text-[11px] text-white font-medium">
-          {loading
-            ? "Yükleniyor..."
-            : error
-              ? error
-              : energy >= maxEnergy
-                ? "Enerji Dolu!"
-                : secondsToNextEnergy !== null
-                  ? `1 Yenilenmesine Kalan: ${formatSeconds(secondsToNextEnergy)}`
-                  : ""}
-        </div>
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-pink-300">
+          %{Math.floor(energyPercent)}
+        </span>
       </div>
 
-      <div className="text-center pt-2">
+      {/* <div className="text-center pt-2">
         <button
           onClick={handleConsumeEnergy}
           className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 text-sm rounded-lg transition"
         >
           1 Enerji Harca (Test)
         </button>
-      </div>
+      </div> */}
     </div>
   );
+
+
 }
 
 export default EnergyPanel;

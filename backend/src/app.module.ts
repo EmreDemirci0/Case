@@ -22,6 +22,7 @@ import { AppSetting } from './modules/app-setting/app-setting.entity';
 import { AppSettingModule } from './modules/app-setting/app-setting.module';
 import { AppSettingController } from './modules/app-setting/app-setting.controller';
 import { AppSettingService } from './modules/app-setting/app-setting.service';
+import { ApiController } from './modules/api/api.controller';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -40,7 +41,7 @@ import { AppSettingService } from './modules/app-setting/app-setting.service';
     TypeOrmModule.forFeature([ItemInstance]), ItemInstanceModule,
     TypeOrmModule.forFeature([AppSetting]), AppSettingModule,
   ],
-  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController,AppSettingController],
+  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController,AppSettingController,ApiController],
   providers: [AppService, UserService, ItemService, ItemLevelService, ItemInstanceService,AppSettingService],
 })
 export class AppModule { }
