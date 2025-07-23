@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Param, Body, Put, Delete, UseGuards, Request, UnauthorizedException, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Put, Delete, UseGuards, Request, UnauthorizedException, Req, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ItemInstanceService } from './item-instance.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserService } from '../user/user.service';
-import { Console } from 'console';
-
+import { AppSettingService } from '../app-setting/app-setting.service';
 
 @Controller('item-instances')
 export class ItemInstanceController {
   constructor(private readonly itemInstanceService: ItemInstanceService,
-    private readonly userService: UserService, // ← Bunu ekle
+    private readonly userService: UserService,
+    private readonly appSettingService: AppSettingService,
   ) { }
   @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
@@ -65,11 +65,16 @@ export class ItemInstanceController {
       throw new UnauthorizedException();
     }
 
-    const maxLevel = 3; // maksimum seviye sınırı
+    const maxLevelStr = await this.appSettingService.getSetting('max_item_level') || "";
+    const maxLevel = parseInt(maxLevelStr, 10);
+    if (isNaN(maxLevel)) {
+      throw new InternalServerErrorException('Geçersiz max_item_level ayarı.');
+    }
 
     if (itemInstance.currentLevel >= maxLevel) {
       throw new BadRequestException(`Maksimum seviye olan ${maxLevel}'a ulaşıldı.`);
     }
+
 
     itemInstance.currentLevel += 1;
     itemInstance.progress = 0;
