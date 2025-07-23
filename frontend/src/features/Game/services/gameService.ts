@@ -12,7 +12,7 @@ interface EnergyData {
   lastEnergyUpdateAt: string;
 }
 
-export async function fetchEnergy(token?: string | null): Promise<BaseResponse<EnergyData>> {
+export async function fetchEnergy(token?: string): Promise<BaseResponse<EnergyData>> {
   try {
     const res = await fetch(`${API_URL}/energy`, {
       method: "GET",
@@ -63,7 +63,7 @@ export async function consumeEnergy(token: string, amount: number): Promise<{ su
   }
 }
 
-export async function fetchAppSettings(token: string | null): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
+export async function fetchAppSettings(token: string): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number }>> {
   try {
     const res = await fetch(`${API_URL}/app-settings`, {
       method: 'GET',
@@ -96,7 +96,7 @@ export async function fetchUserItems(token: string, userId: number): Promise<any
   return await res.json();
 }
 
-export async function fetchItemLevel(token: string|null, itemId: number, level: number): Promise<any> {
+export async function fetchItemLevel(token: string, itemId: number, level: number): Promise<any> {
   const res = await fetch(`${API_URL}/item-levels/item/${itemId}/level/${level}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export async function fetchItemLevel(token: string|null, itemId: number, level: 
   return await res.json();
 }
 
-export async function fetchProgress(token: string | null, cardId: number): Promise<{ progress: number; energy: number }> {
+export async function fetchProgress(token: string, cardId: number): Promise<{ progress: number; energy: number }> {
   const res = await fetch(`${API_URL}/item-instances/progress`, {
     method: 'POST',
     headers: {

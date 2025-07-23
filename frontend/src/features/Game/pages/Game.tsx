@@ -144,7 +144,6 @@ function Game() {
 
   // Progress arttır
   const handleIncreaseProgress = async (cardId: number, index: number) => {
-    // Önce enerji harca
     const energyConsumed = await handleConsumeEnergy();
     if (!energyConsumed) return;
 
@@ -155,7 +154,6 @@ function Game() {
         [cardId]: res.progress,
       }));
 
-      // Progress 100 ise itemLevel'i güncellemek için yeniden çekebiliriz
       if (res.progress >= 100) {
         await refreshItemLevel(cardId, index);
       }
@@ -184,7 +182,8 @@ function Game() {
   const handleLevelUp = async (cardId: number, index: number) => {
     try {
       const res = await fetchLevelUp(token || "", cardId);
-      // Seviyeyi artır ve progress sıfırla
+
+      // userItems güncelle (currentLevel ve progress)
       setUserItems((prev) => {
         const newItems = [...prev];
         newItems[index] = {
@@ -195,10 +194,15 @@ function Game() {
         return newItems;
       });
 
-      // Item level bilgisi güncelle
-      await refreshItemLevel(cardId, index);
+      // itemLevels güncelle, backend’den gelen seviye ile
+      const updatedLevel = await fetchItemLevel(token || "", userItems[index].item.id, res.level);
+      setItemLevels((prev) => {
+        const newLevels = [...prev];
+        newLevels[index] = updatedLevel;
+        return newLevels;
+      });
 
-      // Progress verisini de sıfırla
+      // progress sıfırla
       setProgressData((prev) => ({
         ...prev,
         [cardId]: 0,
@@ -206,7 +210,6 @@ function Game() {
 
       console.log(`Seviye atlandı: ${res.level}`);
     } catch (e: any) {
-      // Backend'den gelen max seviye hatasını yakala
       alert(`Seviye atlama başarısız: ${e.message || e}`);
       console.error("Seviye atlama hatası:", e);
     }
@@ -303,58 +306,80 @@ function Game() {
                     <h3 className="text-white text-sm font-bold leading-snug">{itemLevel.title}</h3>
                     <p className="text-xs text-gray-300 leading-tight line-clamp-2">{itemLevel.description}</p>
 
-                    <div className="flex items-center gap-2 mt-2">
-                      {/* Slider %50 */}
-                      <div className="relative w-1/2 h-8 bg-[#2b2b2b] rounded-full overflow-hidden border border-[#444]">
-                        <div
-                          className="absolute top-0 left-0 h-full bg-[#EE39A8] shadow-[0_0_12px_4px_rgba(238,57,168,0.6)] transition-all duration-500 ease-in-out"
-                          style={{ width: `${progress}%` }}
-                        />
-                        <div
-                          className="absolute inset-0 flex items-center justify-center text-white text-[13px] font-bold"
-                          style={{
-                            fontFamily: "Galano Grotesque, sans-serif",
-                            fontWeight: 600,
-                            lineHeight: "120%",
-                          }}
-                        >
-                          %{progress}
-                        </div>
-                      </div>
+                  {/* Bu kısmı değiştiriyoruz: progress bar ve buton alanı */}
+<div className="flex items-center gap-2 mt-2">
+  {isMaxLevel ? (
+    // Max level ise progress bar gizli, buton tam genişlik
+    <button
+      disabled
+      className="w-full rounded-full h-8 flex items-center justify-center gap-2 bg-gray-600 cursor-not-allowed shadow"
+      style={{
+        fontFamily: "'Galano Grotesque', sans-serif",
+        fontWeight: 600,
+        fontStyle: "normal",
+        fontSize: "15px",
+        lineHeight: "120%",
+        color: "#aaa",
+      }}
+    >
+      <img src="/energyIcon.png" alt="Enerji" className="w-7 h-7" /> Max Seviye 
+    </button>
+  ) : (
+    <>
+      {/* Progress Bar */}
+      <div className="relative w-1/2 h-8 bg-[#2b2b2b] rounded-full overflow-hidden border border-[#444]">
+        <div
+          className="absolute top-0 left-0 h-full bg-[#EE39A8] shadow-[0_0_12px_4px_rgba(238,57,168,0.6)] transition-all duration-500 ease-in-out"
+          style={{ width: `${progress}%` }}
+        />
+        <div
+          className="absolute inset-0 flex items-center justify-center text-white text-[13px] font-bold"
+          style={{
+            fontFamily: "Galano Grotesque, sans-serif",
+            fontWeight: 600,
+            lineHeight: "120%",
+          }}
+        >
+          %{progress}
+        </div>
+      </div>
 
-                      {/* Buton %50 */}
-                      <button
-                        disabled={isMaxLevel}
-                        className={`w-1/2 rounded-full h-8 flex items-center justify-center gap-2 shadow transition
-                          ${isMaxLevel ? "bg-gray-600 cursor-not-allowed" : showLevelUpButton ? "bg-[#EE39A8] text-white" : "bg-[#FDE68A] text-black"}
-                        `}
-                        style={{
-                          fontFamily: "'Galano Grotesque', sans-serif",
-                          fontWeight: 600,
-                          fontStyle: "normal",
-                          fontSize: "15px",
-                          lineHeight: "120%",
-                          color: isMaxLevel ? "#aaa" : showLevelUpButton ? "white" : "black",
-                        }}
-                        onClick={() => {
-                          if (isMaxLevel) return;
-                          if (showLevelUpButton) {
-                            handleLevelUp(itemInstance.id, i);
-                          } else {
-                            handleIncreaseProgress(itemInstance.id, i);
-                          }
-                        }}
-                      >
-                        <span
-                          style={{ color: isMaxLevel ? "#aaa" : showLevelUpButton ? "white" : "#EE39A8" }}
-                          className="flex items-center gap-1"
-                        >
-                          <img src="/energyIcon.png" className="w-7 h-7" alt="Enerji" />
-                          {showLevelUpButton ? null : `-${itemLevel.energyCost || 1}`}
-                        </span>
-                        <span>{isMaxLevel ? "Max Seviye" : showLevelUpButton ? "Yükselt" : "Geliştir"}</span>
-                      </button>
-                    </div>
+      {/* Buton */}
+      <button
+        disabled={isMaxLevel}
+        className={`w-1/2 rounded-full h-8 flex items-center justify-center gap-2 shadow transition
+          ${showLevelUpButton ? "bg-[#EE39A8] text-white" : "bg-[#FDE68A] text-black"}
+        `}
+        style={{
+          fontFamily: "'Galano Grotesque', sans-serif",
+          fontWeight: 600,
+          fontStyle: "normal",
+          fontSize: "15px",
+          lineHeight: "120%",
+          color: showLevelUpButton ? "white" : "black",
+        }}
+        onClick={() => {
+          if (isMaxLevel) return;
+          if (showLevelUpButton) {
+            handleLevelUp(itemInstance.id, i);
+          } else {
+            handleIncreaseProgress(itemInstance.id, i);
+          }
+        }}
+      >
+        <span
+          style={{ color: showLevelUpButton ? "white" : "#EE39A8" }}
+          className="flex items-center gap-1"
+        >
+          <img src="/energyIcon.png" className="w-7 h-7" alt="Enerji" />
+          {showLevelUpButton ? null : `-${itemLevel.energyCost || 1}`}
+        </span>
+        <span>{showLevelUpButton ? "Yükselt" : "Geliştir"}</span>
+      </button>
+    </>
+  )}
+</div>
+
                   </div>
 
                   <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition" />

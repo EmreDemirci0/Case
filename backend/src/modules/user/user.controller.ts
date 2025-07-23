@@ -25,7 +25,7 @@ export class UserController {
       const token = jwt.sign(
         { userId: user.id },//datas  // payload
         process.env.JWT_SECRET,// gizli anahtar (env'de sakla)
-        { expiresIn: "1m" }// token geçerlilik süresi
+        { expiresIn: "1d" }// token geçerlilik süresi
       );
 
       res.status(200).json(new BaseResponse({ token }, true, 'Giriş başarılı'));
