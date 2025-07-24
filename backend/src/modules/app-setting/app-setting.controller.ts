@@ -14,7 +14,8 @@ export class AppSettingController {
     const maxEnergy = await this.appSettingService.getSetting('max_energy');
     const regenMinutes = await this.appSettingService.getSetting('energy_regen_minutes');
     const maxItemLevel=await this.appSettingService.getSetting('max_item_level');
-    return new BaseResponse({ maxEnergy, regenMinutes,maxItemLevel }, true, "Ayarlar getirildi");
+    const progressPerEnergy=await this.appSettingService.getSetting('progress_per_energy');
+    return new BaseResponse({ maxEnergy, regenMinutes,maxItemLevel,progressPerEnergy }, true, "Ayarlar getirildi");
   }
   // // Ayarı anahtarla al
   // @UseGuards(JwtAuthGuard) // Opsiyonel: admin koruması varsa ekle

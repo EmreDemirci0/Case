@@ -14,6 +14,9 @@ export class ItemInstanceService {
     return this.itemInstanceRepo.find({
       where: { user: { id: userId } },
       relations: ['item'],
+      order:{
+        id:'ASC'
+      },
     });
   }
   async findById(id: number) {

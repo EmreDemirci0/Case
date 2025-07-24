@@ -9,7 +9,6 @@ export class ItemLevelService {
     @InjectRepository(ItemLevel)
     private readonly itemLevelRepository: Repository<ItemLevel>,
   ) {}
-//TODO item listelemeleri sırasıyla gelsin
   async findByItemIdAndLevel(itemId: number, level: number): Promise<ItemLevel | null> {
     return await this.itemLevelRepository.findOne({
       where: {

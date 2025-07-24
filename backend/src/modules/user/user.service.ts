@@ -65,6 +65,7 @@ export class UserService {
   }
 
 
+  
   // Belirli bir kullanıcıyı getir
   async getUserById(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });

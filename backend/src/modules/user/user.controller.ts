@@ -17,10 +17,9 @@ export class UserController {
 
     const { email, password } = body;
     const user: ValidateUserResult = await this.userService.validateUser(email, password);
-    if (user === 'notfound') {
-      res.status(404).json(new BaseResponse({ errorType: 'email' }, false, 'Kayıtlı E-posta bulunamadı'));
-    } else if (user === 'invalid') {
-      res.status(401).json(new BaseResponse({ errorType: 'password' }, false, 'Şifre yanlış'));
+    if (user === 'notfound' || user === 'invalid') {
+      res.status(401).json(new BaseResponse(null, false, 'Email veya parola yanlış'));
+      return;
     } else if (typeof user === 'object' && user !== null && 'status' in user && user.status === 'valid') {
       const token = jwt.sign(
         { userId: user.id },//datas  // payload

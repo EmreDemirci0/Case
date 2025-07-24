@@ -56,7 +56,7 @@ export async function consumeEnergy(token: string, amount: number): Promise<{ su
   }
 }
 
-export async function fetchAppSettings(token: string|null): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number,maxItemLevel:number }>> {
+export async function fetchAppSettings(token: string|null): Promise<BaseResponse<{ maxEnergy: number, regenMinutes: number,maxItemLevel:number,progressPerEnergy:number }>> {
   try {
     const res = await fetch(`${API_URL}/app-settings`, {
       method: 'GET',

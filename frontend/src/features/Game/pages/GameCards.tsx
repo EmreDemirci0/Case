@@ -31,6 +31,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
   const [itemLevels, setItemLevels] = useState<any[]>([]);
   const [progressData, setProgressData] = useState<Record<number, number>>({});
   const [maxItemLevel, setMaxItemLevel] = useState(3);
+  const [progressPerEnergy, setprogressPerEnergy] = useState(2);
   const [levelFilter, setLevelFilter] = useState<number | "all">("all");
   const [energySelection, setEnergySelection] = useState<Record<number, number>>({});
 
@@ -63,6 +64,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
         const settingsRes = await fetchAppSettings(token);
         if (settingsRes.data) {
           setMaxItemLevel(Number(settingsRes.data.maxItemLevel));
+          setprogressPerEnergy(Number(settingsRes.data.progressPerEnergy));
         }
       } catch (err) {
         console.error("Settings yüklenemedi:", err);
@@ -96,7 +98,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
       Object.entries(progressData).forEach(([itemIdStr, progress]) => {
         const itemId = Number(itemIdStr);
         const remaining = 100 - progress;
-        const maxUsableEnergyByProgress = Math.floor(remaining / 2);
+        const maxUsableEnergyByProgress = Math.floor(remaining / progressPerEnergy);
         
         // Hem progress hem de mevcut enerji kontrol edilir
         const validOptions = energyOptions
@@ -121,7 +123,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
   const toggleEnergySelection = (id: number, progress: number) => {
     const current = energySelection[id] || 1;
     const remaining = 100 - progress;
-    const maxUsableEnergyByProgress = Math.floor(remaining / 2);
+    const maxUsableEnergyByProgress = Math.floor(remaining / progressPerEnergy);
   
     const validOptions = energyOptions
       .filter((e) => e <= maxUsableEnergyByProgress && e <= currentEnergy)
@@ -173,7 +175,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
     if (!success) return;
 
     try {
-      const res = await increaseProgress(token || "", cardId, energyAmount * 2);
+      const res = await increaseProgress(token || "", cardId, energyAmount * progressPerEnergy);
       setProgressData((prev) => ({ ...prev, [cardId]: res.progress }));
 
       // Eğer progress %100 ve energySelection halen yüksek ise 1'e düşür (otomatik reset)
@@ -307,7 +309,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
                       </button>
                     ) : (
                       <>
-                        <div className="relative w-full h-8 bg-[#2b2b2b] rounded-full overflow-hidden border border-[#444]">
+                        <div className="relative w-full h-5 bg-[#2b2b2b] rounded-full overflow-hidden border border-[#444]">
                           <div
                             className="absolute top-0 left-0 h-full bg-[#EE39A8] transition-all duration-500 ease-in-out"
                             style={{ width: `${progress}%` }}
@@ -317,7 +319,7 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
                           </div>
                         </div>
 
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex gap-2 mt-0">
                           <button
                             disabled={currentEnergy < selectedEnergy} // currentEnergy kullanılıyor
                             className={`w-[80%] rounded-full h-8 flex items-center justify-center gap-2 shadow
