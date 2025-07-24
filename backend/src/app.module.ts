@@ -23,6 +23,10 @@ import { AppSettingModule } from './modules/app-setting/app-setting.module';
 import { AppSettingController } from './modules/app-setting/app-setting.controller';
 import { AppSettingService } from './modules/app-setting/app-setting.service';
 import { ApiController } from './modules/api/api.controller';
+import { ItemLevelTranslation } from './modules/item-level-translation/item-level-translation.entity';
+import { ItemLevelTranslationModule } from './modules/item-level-translation/item-level-translation.module';
+import { ItemLevelTranslationController } from './modules/item-level-translation/item-level-translation.controller';
+import { ItemLevelTranslationService } from './modules/item-level-translation/item-level-translation.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -32,16 +36,17 @@ import { ApiController } from './modules/api/api.controller';
       username: 'postgres', // kendi PostgreSQL kullanıcı adını yaz
       password: 'localhost', // kendi şifreni yaz
       database: 'CaseNS', // pgAdmin'de oluşturduğun veritabanı adı
-      entities: [User, Item, ItemInstance, ItemLevel,AppSetting],
+      entities: [User, Item, ItemInstance, ItemLevel,AppSetting,ItemLevelTranslation],
       synchronize: true, // otomatik tablo oluşturma, prod'da false olmalı
     }),
     TypeOrmModule.forFeature([User]), UserModule,
     TypeOrmModule.forFeature([Item]), ItemModule,
     TypeOrmModule.forFeature([ItemLevel]), ItemLevelModule,
+    TypeOrmModule.forFeature([ItemLevelTranslation]), ItemLevelTranslationModule,
     TypeOrmModule.forFeature([ItemInstance]), ItemInstanceModule,
     TypeOrmModule.forFeature([AppSetting]), AppSettingModule,
   ],
-  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController,AppSettingController,ApiController],
-  providers: [AppService, UserService, ItemService, ItemLevelService, ItemInstanceService,AppSettingService],
+  controllers: [AppController, UserController, ItemController, ItemLevelController, ItemInstanceController,AppSettingController,ItemLevelTranslationController,ApiController],
+  providers: [AppService, UserService, ItemService, ItemLevelService, ItemInstanceService,AppSettingService,ItemLevelTranslationService],
 })
 export class AppModule { }

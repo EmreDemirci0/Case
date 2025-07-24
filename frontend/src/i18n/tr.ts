@@ -36,6 +36,7 @@ const authUiTexts = {
     "©2020 Y. Emre Demirci. Tüm hakları saklıdır.",
 };
 const gameUiTexts={
+  game:"Oyun",
   logout:"Çıkış Yap",
   energy:"Enerji",
   remainingToRenewal1Percent:"%1 Yenilenmesine Kalan",

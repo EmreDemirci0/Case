@@ -1,4 +1,3 @@
-// src/services/authService.ts
 import { API_URL } from "../../../config";
 
 export async function sendLoginRequest(email: string, password: string) {
@@ -31,10 +30,8 @@ export async function sendLogoutRequest(token: string): Promise<Response> {
     });
 }
 
-// JWT token'dan user ID'yi çıkaran utility fonksiyonu
 export const decodeToken = (token: string): {userId: number } | null => {
     try {
-        // JWT token'ı decode et (base64 decode)
         const payload = JSON.parse(atob(token.split('.')[1]));
         return {userId: payload.userId };
     } catch (error) {

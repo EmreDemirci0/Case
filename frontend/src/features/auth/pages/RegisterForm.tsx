@@ -18,13 +18,12 @@ export default function RegisterForm() {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const navigate = useNavigate();
   useEffect(() => {
-    document.title =  localize("authUiTexts.register");
+    document.title = localize("authUiTexts.register");
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Hata mesajlarını sıfırla
     setEmailError("");
     setPasswordError("");
     setConfirmPasswordError("");
@@ -63,24 +62,23 @@ export default function RegisterForm() {
         setNotificationMessage(localize("infoMessages.registrationSuccess"), "green");
         navigate(ROUTES.LOGIN);
       } else {
-        if(response.data.result)
-        {
-            if(response.data.result=="invalid_password"){
-              setPasswordError(localize("infoMessages.invalidPassword"));
-              setEmailError("");
-              setConfirmPasswordError("");
-            }
-            else if(response.data.result=="email_exists"){
-              setEmailError(localize("infoMessages.emailAlreadyExists"));
-              setPasswordError("");
-              setConfirmPasswordError("");
-            }
+        if (response.data.result) {
+          if (response.data.result == "invalid_password") {
+            setPasswordError(localize("infoMessages.invalidPassword"));
+            setEmailError("");
+            setConfirmPasswordError("");
+          }
+          else if (response.data.result == "email_exists") {
+            setEmailError(localize("infoMessages.emailAlreadyExists"));
+            setPasswordError("");
+            setConfirmPasswordError("");
+          }
         }
         else {
 
         }
-      
-     
+
+
       }
     } catch {
       setNotificationMessage(localize("infoMessages.unknownError"), "red");
@@ -138,13 +136,13 @@ export default function RegisterForm() {
                 className="block text-main-white dark:text-main-black text-sm font-bold mb-2"
                 htmlFor="fullName"
               >
-                 {localize("authUiTexts.nameSurnameLabel")}
+                {localize("authUiTexts.nameSurnameLabel")}
               </label>
               <input
                 className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:border-gray-700`}
                 id="fullName"
                 type="text"
-                placeholder= {localize("authUiTexts.nameSurnamePlaceholder")}
+                placeholder={localize("authUiTexts.nameSurnamePlaceholder")}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
@@ -161,7 +159,7 @@ export default function RegisterForm() {
                 className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline${emailError ? " border-red-500" : ""} dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:border-gray-700`}
                 id="email"
                 type="email"
-                placeholder= {localize("authUiTexts.emailPlaceholder")}
+                placeholder={localize("authUiTexts.emailPlaceholder")}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -176,13 +174,13 @@ export default function RegisterForm() {
                 className="block text-main-white dark:text-main-black text-sm font-bold mb-2"
                 htmlFor="password"
               >
-                 {localize("authUiTexts.passwordLabel")}
+                {localize("authUiTexts.passwordLabel")}
               </label>
               <input
                 className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline${passwordError ? " border-red-500" : ""} dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:border-gray-700`}
                 id="password"
                 type="password"
-                placeholder= {localize("authUiTexts.passwordPlaceholder")}
+                placeholder={localize("authUiTexts.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -197,13 +195,13 @@ export default function RegisterForm() {
                 className="block text-main-white dark:text-main-black text-sm font-bold mb-2"
                 htmlFor="confirmPassword"
               >
-                 {localize("authUiTexts.confirmPasswordLabel")}
+                {localize("authUiTexts.confirmPasswordLabel")}
               </label>
               <input
                 className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline${confirmPasswordError ? " border-red-500" : ""} dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:border-gray-700`}
                 id="confirmPassword"
                 type="password"
-                placeholder= {localize("authUiTexts.confirmPasswordPlaceholder")}
+                placeholder={localize("authUiTexts.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
@@ -219,17 +217,17 @@ export default function RegisterForm() {
               className="bg-surface-green-light dark:bg-surface-green-dark hover:bg-surface-green-light-hover dark:hover:bg-surface-green-dark-hover text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4"
               type="submit"
             >
-               {localize("authUiTexts.register")}
+              {localize("authUiTexts.register")}
             </button>
 
             <div className="text-center mb-4">
               <span className="text-main-light dark:text-main-dark text-sm">
-              {localize("authUiTexts.alreadyHaveAccount")}{" "}
+                {localize("authUiTexts.alreadyHaveAccount")}{" "}
                 <Link
                   to={ROUTES.LOGIN}
                   className="font-bold text-main-light dark:text-main-dark hover:text-main-green-light-hover dark:hover:text-main-green-dark-hover"
                 >
-                   {localize("authUiTexts.login")}
+                  {localize("authUiTexts.login")}
                 </Link>
               </span>
             </div>

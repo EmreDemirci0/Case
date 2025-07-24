@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique, BeforeInsert, CreateDateColumn } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 @Unique(['email'])
@@ -23,10 +22,5 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   lastEnergyUpdateAt: Date;
 
-  // @BeforeInsert()
-  // async hashPassword() {
-  //   this.password = await bcrypt.hash(this.password, 10);
-  // }
 }
-// @OneToMany kaldırıldı çünkü gerek yok
 

@@ -37,7 +37,6 @@ export class UserService {
     return { id: user.id, status: 'valid' };
   }
 
-  // Kayıt işlemi
  async registerUser(email: string, password: string, full_name: string): Promise<RegisterUserResult> {
   if (!this.isPasswordValid(password)) {
     return 'invalid_password';
@@ -75,20 +74,16 @@ export class UserService {
 
 
   isPasswordValid(password: string): boolean {
-    // En az bir büyük harf, en az bir noktalama, 5-15 karakter arası
     const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{5,15}$/;
     return regex.test(password);
   }
-  
-  // Belirli bir kullanıcıyı getir
+
   async getUserById(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new Error('User not found');
     return user;
   }
 
-
-  // Şu anki enerjiyi hesapla
   async getCurrentEnergy(user: User): Promise<number> {
     const maxEnergyStr = await this.appSettingService.getSetting('max_energy');
     const regenMinutesStr = await this.appSettingService.getSetting('energy_regen_minutes');
@@ -115,28 +110,19 @@ export class UserService {
     const maxEnergyStr = await this.appSettingService.getSetting('max_energy');
     const regenMinutesStr = await this.appSettingService.getSetting('energy_regen_minutes');
 
-    const maxEnergy = maxEnergyStr ? parseFloat(maxEnergyStr) : 20;
     const regenMinutes = regenMinutesStr ? parseFloat(regenMinutesStr) : 5;
 
     const regenMs = regenMinutes * 60 * 1000;
     const lastUpdate = user.lastEnergyUpdateAt || now;
     const elapsed = now.getTime() - lastUpdate.getTime();
 
-    const fullRegenerated = Math.floor(elapsed / regenMs); // tamamlanan enerji sayısı
-    const remainder = elapsed % regenMs; // dolmak üzere olan bir sonraki enerjinin geçen kısmı (işte bu önemli)
+    const remainder = elapsed % regenMs;
 
-    // Yeni energy miktarını belirle
     const newEnergy = currentEnergy - amount;
-    const newElapsed = newEnergy * regenMs + remainder; // önceki geçen sürenin kaldığı yerden devam
+    const newElapsed = newEnergy * regenMs + remainder;
     const newLastUpdate = new Date(now.getTime() - newElapsed);
 
     await this.userRepository.update(userId, { lastEnergyUpdateAt: newLastUpdate });
     return true;
   }
-
-  // Enerji sorgulama (controller için)
-  // async getUserEnergy(userId: number): Promise<number> {
-  //   const user = await this.getUserById(userId);
-  //   return await this.getCurrentEnergy(user);
-  // }
 }

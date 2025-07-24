@@ -17,26 +17,5 @@ export class AppSettingController {
     const progressPerEnergy=await this.appSettingService.getSetting('progress_per_energy');
     return new BaseResponse({ maxEnergy, regenMinutes,maxItemLevel,progressPerEnergy }, true, "Ayarlar getirildi");
   }
-  // // Ayarı anahtarla al
-  // @UseGuards(JwtAuthGuard) // Opsiyonel: admin koruması varsa ekle
-  // @Get(':key')
-  // async getSetting(@Param('key') key: string) {
-  //   const value = await this.appSettingService.getSetting(key);
-  //   return { key, value };
-  // }
 
-  // // Ayar ekle veya güncelle
-  // @UseGuards(JwtAuthGuard) // Yine admin koruması için
-  // @Post()
-  // async upsertSetting(@Body() body: { key: string; value: string }) {
-  //   const updated = await this.appSettingService.upsertSetting(body.key, body.value);
-  //   return updated;
-  // }
-
-  // // İsteğe bağlı: tüm ayarları listele
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // async getAllSettings() {
-  //   return await this.appSettingService.getAllSettings();
-  // }
 }

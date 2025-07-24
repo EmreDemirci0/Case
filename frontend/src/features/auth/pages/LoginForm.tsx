@@ -19,7 +19,7 @@ export default function LoginForm() {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const { setNotificationMessage } = useNotification();
   useEffect(() => {
-    document.title =  localize("authUiTexts.login");
+    document.title = localize("authUiTexts.login");
   }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

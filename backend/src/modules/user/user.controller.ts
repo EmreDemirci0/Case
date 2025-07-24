@@ -8,10 +8,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {
-
   }
   @Post('login')
-  async login(//frontend/authservice.ts içinde kullanılıyor
+  async login(
     @Body() body: { email: string; password: string }, @Res() res: Response,
   ): Promise<void> {
 
@@ -23,9 +22,9 @@ export class UserController {
       res.status(401).json(new BaseResponse({ errorType: 'password' }, false, 'Şifre yanlış'));
     } else if (typeof user === 'object' && user !== null && 'status' in user && user.status === 'valid') {
       const token = jwt.sign(
-        { userId: user.id },//datas  // payload
-        process.env.JWT_SECRET,// gizli anahtar (env'de sakla)
-        { expiresIn: "1d" }// token geçerlilik süresi
+        { userId: user.id },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
       );
 
       res.status(200).json(new BaseResponse({ token }, true, 'Giriş başarılı'));
@@ -57,46 +56,12 @@ export class UserController {
       return;
     }
 
-    // Olası diğer hatalar için genel cevap
     res.status(500).json(new BaseResponse(null, false, 'Bilinmeyen hata'));
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('user/logout')
-  async logout(@Res() res: Response) {//frontend/authservice.ts içinde kullanılıyor
-    // Opsiyonel olarak log tutabilirsin
+  async logout(@Res() res: Response) {
     res.status(200).json(new BaseResponse(null, true, 'Çıkış başarılı'));
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Get('/energy')
-  // async getEnergy(@Req() req) {
-  //   try {
-  //     const user = await this.userService.getUserById(req.user.userId);
-  //     if (!user) {
-  //       return new BaseResponse(null, false, 'Kullanıcı bulunamadı');
-  //     }
-  //     const energy = await this.userService.getCurrentEnergy(user);
-  //     const lastEnergyUpdateAt = user.lastEnergyUpdateAt;
-  //     return new BaseResponse({ energy, lastEnergyUpdateAt }, true, 'Enerji bilgisi başarıyla getirildi');
-  //   } catch (error) {
-  //     return new BaseResponse(null, false, 'Enerji bilgisi getirilirken hata oluştu');
-  //   }
-  // }
-  // @UseGuards(JwtAuthGuard)
-  // @Post('/energy/consume')
-  // async consumeEnergy(@Req() req, @Body() body: { amount: number }) {
-  //   const userId = req.user.userId;
-  //   const amount = body.amount;
-
-  //   const success = await this.userService.consumeEnergy(userId, amount);
-  //   if (!success) {
-  //     return new BaseResponse(null, false, 'Yeterli enerjiniz yok.');
-  //   }
-
-  //   return new BaseResponse(null, true, 'Enerji başarıyla harcandı.');
-  // }
-
-
-
 }

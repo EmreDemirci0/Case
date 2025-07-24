@@ -8,9 +8,6 @@ export default function useLogout() {
   const navigate = useNavigate();
   const { setNotificationMessage } = useNotification();
 
-  /**
-   * Logout fonksiyonu, zorunlu olarak güncel token parametresi alır.
-   */
   const logout = useCallback(async (token: string|null) => {
     if (!token) return;
     try {

@@ -14,7 +14,8 @@ interface GameCardsProps {
   token: string | null;
   userId: string | null;
   onEnergyConsumed?: () => void;
-  currentEnergy: number; // Yeni prop eklendi
+  currentEnergy: number;
+  lang: string;
 }
 
 const levelGlowShadows: Record<number, string> = {
@@ -27,7 +28,7 @@ const levelGlowShadows: Record<number, string> = {
 
 const energyOptions = [1, 2, 5, 10, 20];
 
-function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCardsProps) {
+function GameCards({ token, userId, onEnergyConsumed, currentEnergy ,lang}: GameCardsProps) {
   const [userItems, setUserItems] = useState<any[]>([]);
   const [itemLevels, setItemLevels] = useState<any[]>([]);
   const [progressData, setProgressData] = useState<Record<number, number>>({});
@@ -43,19 +44,20 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
       try {
         const userItemsRes = await fetchUserItems(token, Number(userId));
         setUserItems(userItemsRes);
-
+        const lang = localStorage.getItem("lang") || 'en'; 
         const itemLevelsRes = await Promise.all(
           userItemsRes.map((itemInstance: any) =>
-            fetchItemLevel(token, itemInstance.item.id, itemInstance.currentLevel)
+            fetchItemLevel(token, itemInstance.item.id, itemInstance.currentLevel,lang)
           )
         );
+        console.log(itemLevelsRes);
         setItemLevels(itemLevelsRes);
       } catch (err) {
         console.error("Veri çekme hatası:", err);
       }
     }
     fetchData();
-  }, [token, userId]);
+  }, [token, userId,lang]);
 
   // App settings çekme (max seviye vs)
   useEffect(() => {
@@ -101,7 +103,6 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
         const remaining = 100 - progress;
         const maxUsableEnergyByProgress = Math.floor(remaining / progressPerEnergy);
 
-        // Hem progress hem de mevcut enerji kontrol edilir
         const validOptions = energyOptions
           .filter((e) => e <= maxUsableEnergyByProgress && e <= currentEnergy)
           .sort((a, b) => b - a);
@@ -201,8 +202,8 @@ function GameCards({ token, userId, onEnergyConsumed, currentEnergy }: GameCards
         };
         return newItems;
       });
-
-      const updatedLevel = await fetchItemLevel(token || "", userItems[index].item.id, res.level);
+      const lang = localStorage.getItem("lang") || 'en'; 
+      const updatedLevel = await fetchItemLevel(token || "", userItems[index].item.id, res.level,lang);
       setItemLevels((prev) => {
         const newLevels = [...prev];
         newLevels[index] = updatedLevel;

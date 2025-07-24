@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Item } from '../item/item.entity';
+import { ItemLevelTranslation } from '../item-level-translation/item-level-translation.entity';
 
 @Entity('item_levels')
 export class ItemLevel {
@@ -12,13 +13,11 @@ export class ItemLevel {
   @Column()
   level: number;
 
-  @Column()
-  title: string;
-
-  @Column('text')
-  description: string;
-
   @Column({ nullable: true })
   imageUrl: string;
+
+  
+@OneToMany(() => ItemLevelTranslation, (translation) => translation.itemLevel)
+translations: ItemLevelTranslation[];
 
 }

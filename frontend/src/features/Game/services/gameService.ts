@@ -1,4 +1,3 @@
-// src/services/energyService.ts
 import { API_URL } from "../../../config";
 
 interface BaseResponse<T = any> {
@@ -88,8 +87,8 @@ export async function fetchUserItems(token: string|null, userId: number): Promis
   return await res.json();
 }
 
-export async function fetchItemLevel(token: string|null, itemId: number, level: number): Promise<any> {
-  const res = await fetch(`${API_URL}/item-levels/item/${itemId}/level/${level}`, {
+export async function fetchItemLevel(token: string | null, itemId: number, level: number, lang: string): Promise<any> {
+  const res = await fetch(`${API_URL}/item-levels/item/${itemId}/level/${level}?lang=${lang}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

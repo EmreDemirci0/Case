@@ -36,6 +36,7 @@ const authUiTexts = {
 };
 
 const gameUiTexts = {
+  game:"Game",
   logout: "Logout",
   energy: "Energy",
   remainingToRenewal1Percent: "Remaining to reach 1% Renewal",

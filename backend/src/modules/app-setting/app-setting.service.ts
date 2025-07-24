@@ -11,13 +11,11 @@ export class AppSettingService {
     private readonly appSettingRepository: Repository<AppSetting>,
   ) {}
 
-  // Tek bir ayarı getir
   async getSetting(key: string): Promise<string | null> {
     const setting = await this.appSettingRepository.findOne({ where: { key } });
     return setting?.value || null;
   }
 
-  // Ayar ekle veya güncelle
   async upsertSetting(key: string, value: string): Promise<AppSetting> {
     let setting = await this.appSettingRepository.findOne({ where: { key } });
     if (setting) {
@@ -28,7 +26,6 @@ export class AppSettingService {
     return this.appSettingRepository.save(setting);
   }
 
-  // Tüm ayarları listele (isteğe bağlı)
   async getAllSettings(): Promise<AppSetting[]> {
     return this.appSettingRepository.find();
   }

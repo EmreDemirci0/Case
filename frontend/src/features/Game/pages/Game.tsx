@@ -17,6 +17,9 @@ function Game() {
   const [_, forceUpdate] = useState(0);
 
   useEffect(() => {
+    document.title = translate("gameUiTexts.game");
+  }, []);
+  useEffect(() => {
     setLocale(language as "tr" | "en");
     forceUpdate((n) => n + 1);
   }, [language]);
@@ -92,6 +95,7 @@ function Game() {
           userId={userId !== null && userId !== undefined ? String(userId) : null}
           onEnergyConsumed={handleEnergyConsumed}
           currentEnergy={currentEnergy}
+          lang={language} 
         />
       </div>
     </div>

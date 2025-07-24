@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import LoginForm from "../features/auth/pages/LoginForm";
 import RegisterForm from "../features/auth/pages/RegisterForm";
 
@@ -17,18 +15,10 @@ function App() {
   
   return (
     <div className="App">
-      {/* <UserProvider> */}
       <NotificationProvider>
         <BrowserRouter>
-          {/* 🔔 Eğer mesaj varsa Notification bileşeni göster */}
-          
-
           <Routes>
-            {/* Ana dizin yönlendirmesi */}
             <Route path={ROUTES.HOME} element={<RootRedirect />} />
-
-            {/* Giriş ve kayıt (eğer giriş yaptıysa yönlendir) */}
-            
             <Route
               path={ROUTES.LOGIN}
               element={
@@ -46,7 +36,6 @@ function App() {
               }
             />
 
-            {/* Sadece giriş yaptıysa açılabilecek route - Layout ile sarmalanmış */}
             <Route
               path={ROUTES.GAME}
               element={
@@ -59,9 +48,7 @@ function App() {
 
         </BrowserRouter>
         </NotificationProvider>
-      {/* </UserProvider> */}
     </div>
   );
 }
-
 export default App;
