@@ -41,7 +41,7 @@ export async function consumeEnergy(token: string, amount: number): Promise<{ su
       },
       body: JSON.stringify({ amount }),
     });
-
+    console.log("consume enerht");
     const data = await res.json();
     return {
       success: data.success,
@@ -78,7 +78,7 @@ export async function fetchAppSettings(token: string|null): Promise<BaseResponse
   }
 }
 
-export async function fetchUserItems(token: string, userId: number): Promise<any[]> {
+export async function fetchUserItems(token: string|null, userId: number): Promise<any[]> {
   const res = await fetch(`${API_URL}/item-instances/user/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,

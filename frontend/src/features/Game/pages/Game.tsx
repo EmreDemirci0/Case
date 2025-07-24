@@ -1,5 +1,5 @@
 // Game.tsx
-import  { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import useLogout from "../../../hooks/useLogout";
 import EnergyPanel from "./EnergyPanel";
@@ -11,10 +11,16 @@ function Game() {
   
   // Sadece component'ler arası iletişim için gerekli state'ler
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [currentEnergy, setCurrentEnergy] = useState(0); // Enerji state'i eklendi
 
   // Enerji tüketildiğinde EnergyPanel'i yenile
   const handleEnergyConsumed = () => {
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  // EnergyPanel'den enerji güncellemelerini al
+  const handleEnergyUpdate = (energy: number, lastUpdate: Date) => {
+    setCurrentEnergy(energy);
   };
 
   return (
@@ -28,13 +34,15 @@ function Game() {
 
         <EnergyPanel
           token={token}
-          refreshTrigger={refreshTrigger} // Key yerine prop olarak gönder
+          refreshTrigger={refreshTrigger}
+          onEnergyUpdate={handleEnergyUpdate} // Callback eklendi
         />
 
         <GameCards
           token={token}
           userId={userId !== null && userId !== undefined ? String(userId) : null}
           onEnergyConsumed={handleEnergyConsumed}
+          currentEnergy={currentEnergy} // Enerji prop'u eklendi
         />
       </div>
     </div>
