@@ -1,11 +1,10 @@
-// EnergyPanel.tsx
-import  { useEffect, useState } from "react";
-import {  fetchAppSettings, fetchEnergy } from "../../Game/services/gameService";
-
+import { useEffect, useState } from "react";
+import { fetchAppSettings, fetchEnergy } from "../../Game/services/gameService";
+import { t as localize } from "../../../config";
 interface EnergyPanelProps {
   token: string | null;
   onEnergyUpdate?: (energy: number, lastUpdate: Date) => void;
-  refreshTrigger?: number; // Dışarıdan gelen refresh tetikleyicisi
+  refreshTrigger?: number;
 }
 
 function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps) {
@@ -18,7 +17,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
 
   const energyPercent = Math.min(100, (energy / maxEnergy) * 100);
 
-  // Dışarıdan gelen refresh tetikleyicisini dinle
   useEffect(() => {
     if (!token || !refreshTrigger) return;
 
@@ -37,7 +35,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     refreshEnergy();
   }, [refreshTrigger, token]);
 
-  // Enerji verilerini yükle
   useEffect(() => {
     if (!token) return;
 
@@ -51,15 +48,13 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
         }
 
         const energyRes = await fetchEnergy(token);
-        console.log("2");
-        console.log(energyRes);
         if (energyRes) {
           setEnergy(energyRes.energy);
           setLastUpdate(new Date(energyRes.lastEnergyUpdateAt));
         }
 
         setLoading(false);
-      } catch {     
+      } catch {
         setLoading(false);
       }
     }
@@ -67,11 +62,9 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     loadData();
   }, [token]);
 
-  // Enerji regeneration timer
   useEffect(() => {
     if (!lastUpdate || !regenMinutes || !maxEnergy) return;
 
-    
     const interval = setInterval(() => {
       const now = new Date();
       const diffMs = now.getTime() - lastUpdate.getTime();
@@ -87,7 +80,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     return () => clearInterval(interval);
   }, [lastUpdate, regenMinutes, maxEnergy]);
 
-  // Enerji güncellemelerini parent'a bildir
   useEffect(() => {
     if (onEnergyUpdate && lastUpdate) {
       onEnergyUpdate(energy, lastUpdate);
@@ -101,45 +93,39 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
   };
 
   return (
-    <div className="w-full px-4  pb-2 text-white">
-      <div className="flex items-center gap-2 mb-3">
-        <img
-          src="/energyIcon.png"
-          alt="Enerji"
-          className="w-10 h-10 drop-shadow-[0_0_8px_#f472b6]"
-        />
-        <span className="text-[#fcd34d] font-bold text-lg">Enerji</span>
-        <span className="ml-auto text-[11px] min-[400px]:text-sm text-gray-400">
-          {loading || energy >= maxEnergy
-            ? ""
-            : secondsToNextEnergy !== null
-              ? `%1 Yenilenmesine Kalan: ${formatSeconds(secondsToNextEnergy)}`
-              : ""}
-        </span>
+    <div className="w-full px-4 pb-2">
+      <div className="bg-gray-200 dark:bg-[#2a2a2a] rounded-xl shadow-md p-4 text-black dark:text-white">
+        <div className="flex items-center gap-2 mb-3">
+          <img
+            src="/energyIcon.png"
+            alt="Enerji"
+            className="w-10 h-10 drop-shadow-[0_0_8px_#f472b6]"
+          />
+          <span className="text-dark dark:text-yellow-300 font-bold text-lg">
+             {localize("gameUiTexts.energy")}
+             </span>
+          <span className="ml-auto text-[11px] min-[400px]:text-sm text-gray-500 dark:text-gray-400">
+            {loading || energy >= maxEnergy
+              ? ""
+              : secondsToNextEnergy !== null
+                ? `${localize("gameUiTexts.remainingToRenewal1Percent")} ${formatSeconds(secondsToNextEnergy)}`
+                : ""}
+          </span>
+        </div>
+  
+        <div className="relative h-6 bg-gray-300 dark:bg-[#3a3a3a] rounded-full overflow-hidden shadow-inner">
+          <div
+            className="absolute top-0 left-0 h-full bg-pink-300 dark:bg-pink-500 rounded-full shadow-[0_0_10px_#ec4899] transition-all duration-500"
+            style={{ width: `${energyPercent}%` }}
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-dark dark:text-pink-100">
+            %{Math.floor(energyPercent)}
+          </span>
+        </div>
       </div>
-
-      <div className="relative h-6 bg-[#2c2c2c] rounded-full overflow-hidden shadow-inner">
-        <div
-          className="absolute top-0 left-0 h-full bg-pink-500 rounded-full shadow-[0_0_10px_#ec4899] transition-all duration-500"
-          style={{ width: `${energyPercent}%` }}
-        />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-pink-300">
-          %{Math.floor(energyPercent)}
-        </span>
-      </div>
-
-      {/* <div className="text-center pt-2">
-        <button
-          onClick={handleConsumeEnergy}
-          className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 text-sm rounded-lg transition"
-        >
-          1 Enerji Harca (Test)
-        </button>
-      </div> */}
     </div>
   );
-
-
+  
 }
 
 export default EnergyPanel;

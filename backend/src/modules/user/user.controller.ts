@@ -17,9 +17,10 @@ export class UserController {
 
     const { email, password } = body;
     const user: ValidateUserResult = await this.userService.validateUser(email, password);
-    if (user === 'notfound' || user === 'invalid') {
-      res.status(401).json(new BaseResponse(null, false, 'Email veya parola yanlış'));
-      return;
+    if (user === 'notfound') {
+      res.status(404).json(new BaseResponse({ errorType: 'email' }, false, 'Kayıtlı E-posta bulunamadı'));
+    } else if (user === 'invalid') {
+      res.status(401).json(new BaseResponse({ errorType: 'password' }, false, 'Şifre yanlış'));
     } else if (typeof user === 'object' && user !== null && 'status' in user && user.status === 'valid') {
       const token = jwt.sign(
         { userId: user.id },//datas  // payload
@@ -34,17 +35,32 @@ export class UserController {
   }
 
   @Post('register')
-  async register(//frontend/authservice.ts içinde kullanılıyor
+  async register(
     @Body() body: { email: string; password: string; full_name: string },
-    @Res() res: Response): Promise<void> {
+    @Res() res: Response,
+  ): Promise<void> {
     const { email, password, full_name } = body;
     const result = await this.userService.registerUser(email, password, full_name);
-    if (result) {
-      res.status(200).json(new BaseResponse(null, true, 'Kayıt başarılı'));
-    } else {
-      res.status(400).json(new BaseResponse(null, false, 'Kayıt başarısız, E-posta zaten kullanılıyor'));
+
+    if (result === 'invalid_password') {
+      res.status(400).json(new BaseResponse({ result }, false, 'Parola kurallarını sağlamıyor'));
+      return;
     }
+
+    if (result === 'email_exists') {
+      res.status(400).json(new BaseResponse({ result }, false, 'E-posta zaten kayıtlı'));
+      return;
+    }
+
+    if (typeof result === 'object' && result.status === 'success') {
+      res.status(200).json(new BaseResponse(null, true, 'Kayıt başarılı'));
+      return;
+    }
+
+    // Olası diğer hatalar için genel cevap
+    res.status(500).json(new BaseResponse(null, false, 'Bilinmeyen hata'));
   }
+
   @UseGuards(JwtAuthGuard)
   @Post('user/logout')
   async logout(@Res() res: Response) {//frontend/authservice.ts içinde kullanılıyor

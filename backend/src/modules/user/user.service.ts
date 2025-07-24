@@ -8,6 +8,10 @@ import { Item } from "../item/item.entity";
 import { ItemInstance } from '../item-instance/item-instance.entity';
 
 export type ValidateUserResult = 'notfound' | 'invalid' | { id: number; status: 'valid' };
+export type RegisterUserResult = 
+  | 'invalid_password'
+  | 'email_exists'
+  | { status: 'success'; userId: number };
 
 @Injectable()
 export class UserService {
@@ -34,37 +38,47 @@ export class UserService {
   }
 
   // Kayıt işlemi
-  async registerUser(email: string, password: string, full_name: string): Promise<boolean> {
-    const existing = await this.userRepository.findOne({ where: { email } });
-    if (existing) return false;
-
-    const hashed = await bcrypt.hash(password, 10);
-    const newUser = this.userRepository.create({
-      email,
-      password: hashed,
-      full_name,
-      lastEnergyUpdateAt: new Date(), // enerji başlangıcı
-    });
-
-    const savedUser = await this.userRepository.save(newUser);
-
-    // 1'den 8'e kadar olan item'ları al
-    const items = await this.itemRepository.findByIds([1, 2, 3, 4, 5, 6, 7, 8]);
-
-    const instances = items.map((item) => {
-      return this.itemInstanceRepository.create({
-        user: savedUser,
-        item,
-        currentLevel: 1,
-      });
-    });
-
-    await this.itemInstanceRepository.save(instances);
-
-    return true;
+ async registerUser(email: string, password: string, full_name: string): Promise<RegisterUserResult> {
+  if (!this.isPasswordValid(password)) {
+    return 'invalid_password';
   }
 
+  const existing = await this.userRepository.findOne({ where: { email } });
+  if (existing) {
+    return 'email_exists';
+  }
 
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = this.userRepository.create({
+    email,
+    password: hashed,
+    full_name,
+    lastEnergyUpdateAt: new Date(),
+  });
+
+  const savedUser = await this.userRepository.save(newUser);
+
+  const items = await this.itemRepository.findByIds([1, 2, 3, 4, 5, 6, 7, 8]);
+
+  const instances = items.map((item) =>
+    this.itemInstanceRepository.create({
+      user: savedUser,
+      item,
+      currentLevel: 1,
+    }),
+  );
+
+  await this.itemInstanceRepository.save(instances);
+
+  return { status: 'success', userId: savedUser.id };
+}
+
+
+  isPasswordValid(password: string): boolean {
+    // En az bir büyük harf, en az bir noktalama, 5-15 karakter arası
+    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{5,15}$/;
+    return regex.test(password);
+  }
   
   // Belirli bir kullanıcıyı getir
   async getUserById(userId: number): Promise<User> {

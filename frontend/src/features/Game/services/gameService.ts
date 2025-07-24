@@ -41,7 +41,6 @@ export async function consumeEnergy(token: string, amount: number): Promise<{ su
       },
       body: JSON.stringify({ amount }),
     });
-    console.log("consume enerht");
     const data = await res.json();
     return {
       success: data.success,

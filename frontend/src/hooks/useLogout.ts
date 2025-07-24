@@ -12,19 +12,17 @@ export default function useLogout() {
    * Logout fonksiyonu, zorunlu olarak güncel token parametresi alır.
    */
   const logout = useCallback(async (token: string|null) => {
-    console.log("logout", token);
     if (!token) return;
     try {
       const res = await sendLogoutRequest(token);
-      console.log("res", res);
       if (res.ok) {
-        setNotificationMessage(localize("logoutSuccess"), "green");
+        setNotificationMessage(localize("infoMessages.logoutSuccess"), "green");
       } else {
-        setNotificationMessage(localize("logoutError"), "red");
+        setNotificationMessage(localize("infoMessages.logoutError"), "red");
       }
     } catch (err) {
       console.error("Logout isteği başarısız:", err);
-      setNotificationMessage(localize("logoutError"), "red");
+      setNotificationMessage(localize("infoMessages.logoutError"), "red");
     }
     localStorage.removeItem("token");
     navigate(ROUTES.LOGIN);

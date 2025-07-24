@@ -21,6 +21,4 @@ export class ItemLevel {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @Column({ type: 'int', default: 0 })
-  upgradeCost: number;
 }
