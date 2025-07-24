@@ -12,7 +12,8 @@ interface EnergyData {
   lastEnergyUpdateAt: string;
 }
 
-export async function fetchEnergy(token?: string|null): Promise<BaseResponse<EnergyData>> {
+
+export async function fetchEnergy(token?: string | null): Promise<EnergyData> {
   try {
     const res = await fetch(`${API_URL}/api/energy`, {
       method: "GET",
@@ -22,22 +23,14 @@ export async function fetchEnergy(token?: string|null): Promise<BaseResponse<Ene
       },
     });
 
-    const data: BaseResponse<EnergyData> = await res.json();
-
-    // if (!data.success) {
-    //   throw new Error(data.message || "Enerji bilgisi alınamadı");
-    // }
-
+    const data: EnergyData = await res.json();
     return data;
   } catch (error) {
     console.error("Enerji servis hatası:", error);
-    return {
-      data: null,
-      success: false,
-      message: error instanceof Error ? error.message : "Bilinmeyen hata",
-    };
+    throw error; // veya fallback obje döndür
   }
 }
+
 export async function consumeEnergy(token: string, amount: number): Promise<{ success: boolean; message: string }> {
   try {
     const res = await fetch(`${API_URL}/api/energy/consume`, {

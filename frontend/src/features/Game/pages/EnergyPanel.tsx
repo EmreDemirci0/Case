@@ -1,6 +1,6 @@
 // EnergyPanel.tsx
-import React, { useEffect, useState } from "react";
-import { consumeEnergy, fetchAppSettings, fetchEnergy } from "../../Game/services/gameService";
+import  { useEffect, useState } from "react";
+import {  fetchAppSettings, fetchEnergy } from "../../Game/services/gameService";
 
 interface EnergyPanelProps {
   token: string | null;
@@ -14,7 +14,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
   const [regenMinutes, setRegenMinutes] = useState(5);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [secondsToNextEnergy, setSecondsToNextEnergy] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const energyPercent = Math.min(100, (energy / maxEnergy) * 100);
@@ -26,7 +25,6 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
     async function refreshEnergy() {
       try {
         const energyRes = await fetchEnergy(token);
-        console.log(energyRes);
         if (energyRes) {
           setEnergy(energyRes.energy);
           setLastUpdate(new Date(energyRes.lastEnergyUpdateAt));
@@ -61,8 +59,7 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
         }
 
         setLoading(false);
-      } catch {
-        setError("Enerji verileri alınamadı.");
+      } catch {     
         setLoading(false);
       }
     }
@@ -74,6 +71,7 @@ function EnergyPanel({ token, onEnergyUpdate, refreshTrigger }: EnergyPanelProps
   useEffect(() => {
     if (!lastUpdate || !regenMinutes || !maxEnergy) return;
 
+    
     const interval = setInterval(() => {
       const now = new Date();
       const diffMs = now.getTime() - lastUpdate.getTime();

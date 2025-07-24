@@ -1,5 +1,5 @@
 // Game.tsx
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import useLogout from "../../../hooks/useLogout";
 import EnergyPanel from "./EnergyPanel";

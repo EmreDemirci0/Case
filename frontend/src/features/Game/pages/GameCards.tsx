@@ -114,18 +114,18 @@ function GameCards({ token, userId, onEnergyConsumed }: GameCardsProps) {
     }
   };
 
-  const refreshItemLevel = async (index: number) => {
-    try {
-      const updatedLevel = await fetchItemLevel(token, userItems[index].item.id, userItems[index].currentLevel);
-      setItemLevels((prev) => {
-        const newLevels = [...prev];
-        newLevels[index] = updatedLevel;
-        return newLevels;
-      });
-    } catch (e) {
-      console.error("Item level yenileme hatası:", e);
-    }
-  };
+  // const refreshItemLevel = async (index: number) => {
+  //   try {
+  //     const updatedLevel = await fetchItemLevel(token, userItems[index].item.id, userItems[index].currentLevel);
+  //     setItemLevels((prev) => {
+  //       const newLevels = [...prev];
+  //       newLevels[index] = updatedLevel;
+  //       return newLevels;
+  //     });
+  //   } catch (e) {
+  //     console.error("Item level yenileme hatası:", e);
+  //   }
+  // };
 
   const handleLevelUp = async (cardId: number, index: number) => {
     try {
@@ -201,7 +201,7 @@ function GameCards({ token, userId, onEnergyConsumed }: GameCardsProps) {
               Filtreye uygun eşya bulunamadı.
             </div>
           ) : (
-            filteredItems.map((itemInstance, i) => {
+            filteredItems.map((itemInstance) => {
               const globalIndex = userItems.findIndex((u) => u.id === itemInstance.id);
               const itemLevel = itemLevels[globalIndex];
               const progress = progressData[itemInstance.id] || 0;
